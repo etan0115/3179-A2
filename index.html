@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Walking and active travel in Australia, from national participation to Melbourne's pedestrian streets.">
+  <title>Walking Australia — Active Travel in 2025</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;650&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">Skip to story</a>
+
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">Travel, Transport &amp; Tourism <span>·</span> Walking and Active Travel</p>
+        <h1>Australia's favourite activity doesn't need a membership, a team, or a booking.</h1>
+        <p class="byline">By <strong>Eebel Tan</strong> <span>·</span> Published 25 October 2026</p>
+
+        <p class="hero-intro">
+          Half of all Australian adults went walking for exercise or leisure in the past year,
+          more than took part in any sport or gym activity.
+        </p>
+        <p class="hero-intro hero-intro-secondary">
+          For readers in Malaysia, where cities such as Kuala Lumpur are working to become more
+          walkable, Australia offers a useful comparison. This story moves from the national
+          picture down to Melbourne's footpaths: <strong>who walks, where, when, and why it matters.</strong>
+        </p>
+      </div>
+
+      <aside class="hero-stat" aria-label="Key statistic: 50 percent of Australian adults walk for recreation">
+        <span class="hero-stat-label">At a glance</span>
+        <strong>50%</strong>
+        <span>of Australian adults walk for recreation</span>
+        <small>Australia's most popular physical activity</small>
+      </aside>
+    </div>
+
+    <div class="scroll-cue" aria-hidden="true">
+      <span></span>
+      Scroll to explore
+    </div>
+  </header>
+
+  <hr class="hero-divider">
+
+  <nav class="section-nav" aria-label="Story sections">
+    <div class="section-nav-inner">
+      <span class="section-nav-label">In this story</span>
+      <a href="#hook">Overview</a>
+      <a href="#who-walks">Who walks</a>
+      <a href="#national-picture">National picture</a>
+      <a href="#melbourne">Melbourne on foot</a>
+      <a href="#why-it-matters">Why it matters</a>
+      <a href="#takeaway">Takeaway</a>
+    </div>
+  </nav>
+
+  <nav class="progress-dots" aria-label="Story progress">
+    <a href="#hook" data-section="hook" data-label="Overview" aria-label="Go to Overview"><span></span></a>
+    <a href="#who-walks" data-section="who-walks" data-label="Who walks" aria-label="Go to Who walks"><span></span></a>
+    <a href="#national-picture" data-section="national-picture" data-label="The national picture" aria-label="Go to The national picture"><span></span></a>
+    <a href="#melbourne" data-section="melbourne" data-label="Melbourne on foot" aria-label="Go to Melbourne on foot"><span></span></a>
+    <a href="#why-it-matters" data-section="why-it-matters" data-label="Why it matters" aria-label="Go to Why it matters"><span></span></a>
+    <a href="#takeaway" data-section="takeaway" data-label="Takeaway" aria-label="Go to Takeaway"><span></span></a>
+  </nav>
+
+  <main id="main-content">
+    <section id="hook">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">01</span>
+      <h2>Australia's favourite activity</h2>
+    </div>
+    <p class="lede">
+      Half of Australian adults walked for recreation in the past year, more than went to the gym or played any sport. Walking is the country's most popular way to stay active.
+    </p>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Pictogram / icon array</span>
+        <h3 class="card-insight">1 in 2 Australian adults walked for recreation in the past year</h3>
+        <div class="chart-canvas" id="hook-pictogram" data-spec="specs/hook-pictogram.json" data-pending="chart pending"></div>
+        <p class="card-caption">Each figure is 1 in 100 adults (15+). Coloured figures took part in recreational walking at least once in the past 12 months.</p>
+        <p class="card-source">Source: AusPlay National Data Tables, 2025</p>
+      </div>
+      <div class="chart-card editorial-chart">
+        <span class="pill">Ranked comparison</span>
+        <h3 class="card-insight">Walking is Australia's most popular activity — ahead of the gym by 16 percentage points</h3>
+        <div class="chart-canvas" id="hook-ranked-activities" data-spec="specs/hook-ranked-activities.json" data-pending="chart pending"></div>
+        <p class="card-caption">Top 10 sports and physical activities by adult participation in 2025.</p>
+        <p class="card-source">Source: AusPlay, 2023–25 baseline</p>
+      </div>
+    </div>
+  </div>
+</section>
+    <section id="who-walks">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">02</span>
+      <h2>Who walks, and for what</h2>
+    </div>
+    <p class="lede">
+      The older Australians get, the more they walk for leisure, peaking at 66% of 55–64 year olds. Walking to work is a different habit: fewer than 4 in 100 workers walk to work, at every age.
+    </p>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Line / age trend</span>
+        <h3 class="card-insight">Recreational walking climbs from 30% at 15–17 to a peak of 66% at 55–64</h3>
+        <div class="chart-canvas" id="who-age-trend" data-spec="specs/who-age-trend.json" data-pending="chart pending"></div>
+        <p class="card-caption">Share of each age group who walked for recreation at least once in the past 12 months.</p>
+        <p class="card-source">Source: AusPlay</p>
+      </div>
+      <div class="chart-card editorial-chart">
+        <span class="pill">Dumbbell / connected dot plot</span>
+        <h3 class="card-insight">Walking to work stays under 4% at every age — recreational walking climbs steadily instead</h3>
+        <div class="chart-canvas" id="who-dumbbell" data-spec="specs/who-dumbbell.json" data-pending="chart pending"></div>
+        <p class="card-caption">Recreational walking (took part in the past year, AusPlay 2025) compared with walking to work on Census day (10 August 2021, the day of Australia's national census), by age group. The two measures come from different surveys, so compare the gap rather than exact values.</p>
+        <p class="card-source">Source: AusPlay 2025 (Australian Sports Commission) and Australian Bureau of Statistics, Census 2021</p>
+      </div>
+    </div>
+  </div>
+</section>
+    <section id="national-picture">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">03</span>
+      <h2>Where people walk: the national picture</h2>
+    </div>
+    <p class="lede">
+      Only about 2.5% of Australian workers walk to work, but the share rises where homes and jobs sit close together. The Northern Territory leads the states; in Victoria, the city centre and small country towns lead the regions. Victoria is divided into 66 statistical regions set by the Australian Bureau of Statistics, each about the size of a group of suburbs or a country district.
+    </p>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Choropleth</span>
+        <h3 class="card-insight">The Northern Territory walks to work at 7.6% — three times the national average</h3>
+        <div class="chart-canvas" id="national-choropleth" data-spec="specs/national-choropleth.json" data-pending="chart pending"></div>
+        <p class="card-caption">Share of employed persons who walked only, by state and territory. Note: the 2021 Census was held during COVID lockdowns in New South Wales, Victoria and the Australian Capital Territory, which lowered commuting in those states (see Section 05).</p>
+        <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, Transport data summary</p>
+      </div>
+
+      <div class="chart-card editorial-chart">
+        <span class="pill">Choropleth (regions)</span>
+        <h3 class="card-insight">Melbourne City walks to work at 12.1% — nearly double the next region, Yarra (6.4%)</h3>
+        <div class="chart-canvas" id="national-choropleth-sa3" data-spec="specs/national-choropleth-sa3.json" data-pending="chart pending"></div>
+        <p class="card-caption">Share of employed persons who walked only, by statistical region, Victoria. Victorian average: 2.3%. Use the dropdown to zoom into Greater Melbourne.</p>
+        <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
+      </div>
+    </div>
+
+    <div class="chart-card editorial-chart chart-wide">
+      <span class="pill">Distribution</span>
+      <h3 class="card-insight">The typical regional town walks to work more than inner Melbourne, and the outer suburbs walk least</h3>
+      <div class="chart-canvas" id="national-sorted-bar" data-spec="specs/national-sorted-bar.json" data-pending="chart pending"></div>
+      <p class="card-caption">Each dot is one of Victoria's 66 statistical regions. Boxes show the middle 50% of regions; the dark line is the median. Melbourne was in lockdown on Census day, which lowered its figures.</p>
+      <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
+    </div>
+  </div>
+</section>
+    <section id="melbourne">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">04</span>
+      <h2>Melbourne, on foot</h2>
+    </div>
+    <p class="lede">
+      At street level, foot traffic gathers in a few city-centre blocks. On weekdays it rises and falls with the commute; on weekends it builds into one long afternoon.
+    </p>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Proportional symbol map</span>
+        <h3 class="card-insight">Flinders Lane and Swanston Street saw over 14 million pedestrians in 2025, the busiest corner in the city</h3>
+        <div class="chart-canvas" id="melbourne-proportional-symbol" data-spec="specs/melbourne-proportional-symbol.json" data-pending="chart pending"></div>
+        <p class="card-caption">Annual pedestrian volume at each sensor. Circle area is proportional to the number of pedestrians counted.</p>
+        <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
+      </div>
+
+      <div class="chart-card editorial-chart">
+        <span class="pill">Hex-bin map</span>
+        <h3 class="card-insight">Foot traffic concentrates in a few city-centre blocks around Swanston and Flinders Streets</h3>
+        <div class="chart-canvas" id="melbourne-hexbin" data-spec="specs/melbourne-hexbin.json" data-pending="chart pending"></div>
+        <p class="card-caption">The same sensors (white dots) grouped into hexagons. Darker hexagons had more pedestrians; the colours use a log scale, so each step darker means roughly 10 times more people. Drag the slider to change hexagon size. Blank areas have no sensor, which does not mean no pedestrians.</p>
+        <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
+      </div>
+    </div>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Heatmap</span>
+        <h3 class="card-insight">Weekday foot traffic peaks sharply at 5–6pm; weekends peak later and flatten out</h3>
+        <div class="chart-canvas" id="melbourne-heatmap" data-spec="specs/melbourne-heatmap.json" data-pending="chart pending"></div>
+        <p class="card-caption">Average pedestrians counted per sensor in each hour, by day of week, across all sensors in 2025.</p>
+        <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
+      </div>
+
+      <div class="chart-card editorial-chart">
+        <span class="pill">Radial chart</span>
+        <h3 class="card-insight">Around the clock: weekdays have two rush hours, weekends one long afternoon</h3>
+        <div class="chart-canvas" id="melbourne-radial-clock" data-spec="specs/melbourne-radial-clock.json" data-pending="chart pending"></div>
+        <p class="card-caption">Average pedestrians per sensor for each hour of the day, arranged like a 24-hour clock.</p>
+        <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+    <section id="why-it-matters">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">05</span>
+      <h2>Why it matters: walking or driving</h2>
+    </div>
+    <p class="lede">
+      Where more people walk to work, fewer drive, so walking replaces car trips and the traffic and emissions that come with them. The Census was taken during COVID lockdowns, so commuting figures for New South Wales, Victoria and the Australian Capital Territory are lower than usual.
+    </p>
+
+    <div class="chart-row editorial-grid">
+      <div class="chart-card editorial-chart">
+        <span class="pill">Scatter plot</span>
+        <h3 class="card-insight">Where people walk to work, they drive less: in Melbourne City, 1 in 4 commuters walk</h3>
+        <div class="chart-canvas" id="why-walk-vs-car" data-spec="specs/why-walk-vs-car.json" data-pending="chart pending"></div>
+        <p class="card-caption">Each dot is one of Victoria's 66 statistical regions, coloured by region type. It compares the share of commuters who walked with the share who drove; people who worked at home or did not go to work are excluded. The dashed line shows the overall trend: regions with more driving have less walking.</p>
+        <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
+      </div>
+
+      <div class="chart-card editorial-chart">
+        <span class="pill">Waffle charts (small multiples)</span>
+        <h3 class="card-insight">Lockdowns kept 31% of New South Wales workers and 26% of Victorian workers at home on Census day</h3>
+        <div class="chart-canvas" id="why-mode-share" data-spec="specs/why-mode-share.json" data-pending="chart pending"></div>
+        <p class="card-caption">How employed people travelled to work on Census day, 10 August 2021. Each grid has 100 squares; each square is 1% of workers. Click a legend item to highlight one travel mode.</p>
+        <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, Transport data summary (Table 3)</p>
+      </div>
+    </div>
+  </div>
+</section>
+    <section id="takeaway" class="takeaway">
+  <div class="section-inner editorial-section">
+    <div class="section-heading">
+      <span class="section-number">06</span>
+      <h2>The takeaway</h2>
+    </div>
+    <p class="lede">
+      Walking is already Australia's favourite activity, but mostly for leisure rather than for getting to work. The places where people do walk to work, compact city centres and small towns, show what more walkable cities could look like, including in Malaysia.
+    </p>
+
+    <div class="takeaway-stats">
+      <div class="stat">
+        <span class="stat-number">50%</span>
+        <p>of Australian adults walk for recreation, the country's most popular activity</p>
+      </div>
+      <div class="stat">
+        <span class="stat-number">2.5%</span>
+        <p>walk to work: walking for fun and walking to get somewhere are very different habits</p>
+      </div>
+      <div class="stat">
+        <span class="stat-number">1 in 4</span>
+        <p>commuters in Melbourne City walk, where homes, jobs and transport sit close together</p>
+      </div>
+    </div>
+  </div>
+</section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-kicker">Walking Australia</span>
+        <p>Created by <strong>Eebel Tan</strong><br>FIT3179 Data Visualisation · Monash University</p>
+      </div>
+      <div class="footer-meta">
+        <p>Published 25 October 2026</p>
+        <p class="sources-label">Data sources</p>
+        <p class="sources">
+          <a href="https://www.ausport.gov.au/clearinghouse/research/ausplay/results" target="_blank" rel="noopener">AusPlay National Data Tables, Australian Sports Commission (2025)</a> ·
+          <a href="https://www.abs.gov.au/statistics/industry/tourism-and-transport/transport-census/latest-release" target="_blank" rel="noopener">Australian Bureau of Statistics, Census 2021, Transport data summary</a> ·
+          <a href="https://www.abs.gov.au/census/find-census-data/datapacks" target="_blank" rel="noopener">Australian Bureau of Statistics, Census 2021 DataPacks (Table G62)</a> ·
+          <a href="https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3" target="_blank" rel="noopener">Australian Bureau of Statistics, Australian Statistical Geography Standard (Edition 3) boundaries</a> ·
+          <a href="https://data.melbourne.vic.gov.au/explore/dataset/pedestrian-counting-system-monthly-counts-per-hour/" target="_blank" rel="noopener">City of Melbourne Pedestrian Counting System</a>.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function loadChart(id, specPath) {
+      vegaEmbed('#' + id, specPath, {
+        actions: false,
+        renderer: 'svg',
+        config: { autosize: { type: 'fit', contains: 'padding' } }
+      })
+        .then(res => {
+          window.views = window.views || {};
+          window.views[id] = res.view;
+        })
+        .catch(console.error);
+    }
+
+    loadChart('hook-pictogram', 'specs/hook-pictogram.json');
+    loadChart('hook-ranked-activities', 'specs/hook-ranked-activities.json');
+    loadChart('who-age-trend', 'specs/who-age-trend.json');
+    loadChart('who-dumbbell', 'specs/who-dumbbell.json');
+    loadChart('national-choropleth', 'specs/national-choropleth.json');
+    loadChart('national-choropleth-sa3', 'specs/national-choropleth-sa3.json');
+    loadChart('national-sorted-bar', 'specs/national-sorted-bar.json');
+    loadChart('melbourne-hexbin', 'specs/melbourne-hexbin.json');
+    loadChart('melbourne-proportional-symbol', 'specs/melbourne-proportional-symbol.json');
+    loadChart('melbourne-heatmap', 'specs/melbourne-heatmap.json');
+    loadChart('melbourne-radial-clock', 'specs/melbourne-radial-clock.json');
+    loadChart('why-walk-vs-car', 'specs/why-walk-vs-car.json');
+    loadChart('why-mode-share', 'specs/why-mode-share.json');
+
+    const dots = document.querySelectorAll('.progress-dots a');
+    const sectionsInView = document.querySelectorAll('section[id]');
+
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          dots.forEach((dot) => {
+            dot.classList.toggle('is-active', dot.dataset.section === entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+
+    sectionsInView.forEach((section) => spy.observe(section));
+
+    // Gentle reveal only when motion is allowed.
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const revealItems = document.querySelectorAll('.section-heading, .lede, .chart-card, .takeaway-stats');
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      revealItems.forEach(item => {
+        item.classList.add('reveal');
+        revealObserver.observe(item);
+      });
+    }
+  </script>
+</body>
+</html>
