@@ -1,0 +1,102 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Recreational walking participation by age group",
+  "width": "container",
+  "height": 240,
+  "data": {
+    "url": "data/ausplay_participation_2025.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "rate_Total": "number",
+        "rate_Male": "number",
+        "rate_Female": "number",
+        "rate_15-17": "number",
+        "rate_18-24": "number",
+        "rate_25-34": "number",
+        "rate_35-44": "number",
+        "rate_45-54": "number",
+        "rate_55-64": "number",
+        "rate_65+": "number",
+        "participants_Total": "number",
+        "participants_Male": "number",
+        "participants_Female": "number",
+        "participants_15-17": "number",
+        "participants_18-24": "number",
+        "participants_25-34": "number",
+        "participants_35-44": "number",
+        "participants_45-54": "number",
+        "participants_55-64": "number",
+        "participants_65+": "number"
+      }
+    }
+  },
+  "transform": [
+    {"filter": "datum.activity == 'Walking (Recreational)'"},
+    {
+      "fold": ["rate_15-17", "rate_18-24", "rate_25-34", "rate_35-44", "rate_45-54", "rate_55-64", "rate_65+"],
+      "as": ["column", "rate"]
+    },
+    {"calculate": "replace(datum.column, 'rate_', '')", "as": "age_group"}
+  ],
+  "encoding": {
+    "x": {
+      "field": "age_group",
+      "type": "ordinal",
+      "sort": ["15-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+      "title": "Age group",
+      "axis": {"labelAngle": 0}
+    },
+    "y": {
+      "field": "rate",
+      "type": "quantitative",
+      "title": "Walk for recreation",
+      "scale": {"domain": [0, 0.8]},
+      "axis": {"format": "%", "tickCount": 5}
+    }
+  },
+  "layer": [
+    {"mark": {"type": "line", "color": "#0f5c5e", "strokeWidth": 2.5}},
+    {
+      "mark": {"type": "point", "filled": true, "size": 60},
+      "encoding": {
+        "tooltip": [
+          {"field": "age_group", "title": "Age group"},
+          {"field": "rate", "type": "quantitative", "format": ".1%", "title": "Walk for recreation"}
+        ],
+        "color": {"condition": {"test": "datum.age_group == '55-64'", "value": "#ad8a4e"}, "value": "#0f5c5e"},
+        "size": {"condition": {"test": "datum.age_group == '55-64'", "value": 110}, "value": 60}
+      }
+    },
+    {
+      "transform": [{"filter": "datum.age_group == '55-64'"}],
+      "mark": {"type": "text", "dy": -16, "fontSize": 11, "fontWeight": 500, "color": "#1f2e22"},
+      "encoding": {"text": {"value": "Peak: 66% of 55–64 year olds"}}
+    }
+  ],
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}

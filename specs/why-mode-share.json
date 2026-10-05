@@ -1,0 +1,155 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Waffle charts: how employed people travelled to work on Census day 2021, by state. Each square is 1% of workers.",
+  "data": {
+    "url": "data/census2021_travel_to_work_by_state.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "New South Wales": "number",
+        "Victoria": "number",
+        "Queensland": "number",
+        "South Australia": "number",
+        "Western Australia": "number",
+        "Tasmania": "number",
+        "Northern Territory": "number",
+        "Australian Capital Territory": "number",
+        "Australia": "number"
+      }
+    }
+  },
+  "params": [{"name": "mode_pick", "select": {"type": "point", "fields": ["mode_group"]}, "bind": "legend"}],
+  "transform": [
+    {"filter": "datum.Mode != 'Total'"},
+    {
+      "fold": [
+        "Australia",
+        "New South Wales",
+        "Victoria",
+        "Queensland",
+        "South Australia",
+        "Western Australia",
+        "Tasmania",
+        "Northern Territory",
+        "Australian Capital Territory"
+      ],
+      "as": ["state", "people"]
+    },
+    {
+      "calculate": "datum.Mode == 'Walked only' ? 'Walked' : datum.Mode == 'Bicycle' ? 'Cycled' : indexof(['Train','Bus','Ferry','Tram/light rail'], datum.Mode) >= 0 ? 'Public transport' : indexof(['Car, as driver','Car, as passenger','Taxi/ride-share service'], datum.Mode) >= 0 ? 'Car' : datum.Mode == 'Worked at home' ? 'Worked at home' : datum.Mode == 'Did not go to work' ? 'Did not go to work' : 'Other or not stated'",
+      "as": "mode_group"
+    },
+    {
+      "calculate": "indexof(['Walked','Cycled','Public transport','Car','Other or not stated','Worked at home','Did not go to work'], datum.mode_group)",
+      "as": "mode_order"
+    },
+    {
+      "aggregate": [{"op": "sum", "field": "people", "as": "people"}],
+      "groupby": ["state", "mode_group", "mode_order"]
+    },
+    {"joinaggregate": [{"op": "sum", "field": "people", "as": "state_total"}], "groupby": ["state"]},
+    {"calculate": "datum.people / datum.state_total", "as": "share"},
+    {
+      "window": [{"op": "sum", "field": "share", "as": "cum_end"}],
+      "groupby": ["state"],
+      "sort": [{"field": "mode_order"}],
+      "frame": [null, 0]
+    },
+    {"calculate": "round((datum.cum_end - datum.share) * 100)", "as": "first_square"},
+    {"calculate": "round(datum.cum_end * 100)", "as": "end_square"},
+    {"calculate": "sequence(datum.first_square, datum.end_square)", "as": "square"},
+    {"flatten": ["square"]},
+    {"filter": "isValid(datum.square)"},
+    {"calculate": "datum.square % 10", "as": "col"},
+    {"calculate": "floor(datum.square / 10)", "as": "row"}
+  ],
+  "facet": {
+    "field": "state",
+    "type": "nominal",
+    "title": null,
+    "sort": [
+      "Australia",
+      "New South Wales",
+      "Victoria",
+      "Australian Capital Territory",
+      "Queensland",
+      "South Australia",
+      "Western Australia",
+      "Tasmania",
+      "Northern Territory"
+    ],
+    "header": {
+      "labelFontSize": 12,
+      "labelFontWeight": 600,
+      "labelColor": "#1f2e22",
+      "labelPadding": 6,
+      "labelExpr": "datum.value == 'Australian Capital Territory' ? ['Australian Capital', 'Territory'] : datum.value",
+      "labelLimit": 160
+    }
+  },
+  "columns": 3,
+  "spec": {
+    "width": 140,
+    "height": 140,
+    "mark": {"type": "rect", "cornerRadius": 2},
+    "encoding": {
+      "x": {"field": "col", "type": "ordinal", "axis": null, "scale": {"paddingInner": 0.15}},
+      "y": {"field": "row", "type": "ordinal", "axis": null, "scale": {"paddingInner": 0.15}},
+      "color": {
+        "field": "mode_group",
+        "type": "nominal",
+        "title": "How they got to work",
+        "sort": [
+          "Walked",
+          "Cycled",
+          "Public transport",
+          "Car",
+          "Other or not stated",
+          "Worked at home",
+          "Did not go to work"
+        ],
+        "scale": {
+          "domain": [
+            "Walked",
+            "Cycled",
+            "Public transport",
+            "Car",
+            "Other or not stated",
+            "Worked at home",
+            "Did not go to work"
+          ],
+          "range": ["#0f5c5e", "#8a9a4f", "#4c6e96", "#e2d6bd", "#c8c3b6", "#be6e33", "#e3b58c"]
+        },
+        "legend": {
+          "orient": "top",
+          "columns": 2,
+          "columnPadding": 14,
+          "symbolType": "square",
+          "labelFontSize": 12,
+          "offset": 12
+        }
+      },
+      "opacity": {"condition": {"param": "mode_pick", "value": 1}, "value": 0.15},
+      "tooltip": [
+        {"field": "state", "title": "State"},
+        {"field": "mode_group", "title": "Travel"},
+        {"field": "share", "type": "quantitative", "format": ".1%", "title": "Share of workers"},
+        {"field": "people", "type": "quantitative", "format": ",", "title": "People"}
+      ]
+    }
+  },
+  "config": {
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "facet": {"spacing": 20},
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "labelLimit": 200,
+      "titleLimit": 250
+    },
+    "text": {"font": "IBM Plex Sans"}
+  }
+}

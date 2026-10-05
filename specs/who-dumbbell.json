@@ -1,0 +1,161 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Dumbbell: recreational walking (AusPlay) vs walking to work (Census) by age group",
+  "width": "container",
+  "height": 240,
+  "data": {
+    "url": "data/census2021_travel_to_work_by_age.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "15-24": "number",
+        "25-34": "number",
+        "35-44": "number",
+        "45-54": "number",
+        "55-64": "number",
+        "65-74": "number",
+        "75+": "number"
+      }
+    }
+  },
+  "transform": [
+    {"filter": "datum.Mode == 'Walked only' || datum.Mode == 'Total'"},
+    {"fold": ["15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+"], "as": ["census_band", "people"]},
+    {
+      "calculate": "datum.census_band == '65-74' || datum.census_band == '75+' ? '65+' : datum.census_band",
+      "as": "age_group"
+    },
+    {"aggregate": [{"op": "sum", "field": "people", "as": "people"}], "groupby": ["age_group", "Mode"]},
+    {"pivot": "Mode", "value": "people", "groupby": ["age_group"]},
+    {"calculate": "datum['Walked only'] / datum.Total", "as": "Walk to work"},
+    {"calculate": "'Walking (Recreational)'", "as": "activity"},
+    {
+      "lookup": "activity",
+      "from": {
+        "data": {
+          "url": "data/ausplay_participation_2025.csv",
+          "format": {
+            "type": "csv",
+            "parse": {
+              "rate_Total": "number",
+              "rate_Male": "number",
+              "rate_Female": "number",
+              "rate_15-17": "number",
+              "rate_18-24": "number",
+              "rate_25-34": "number",
+              "rate_35-44": "number",
+              "rate_45-54": "number",
+              "rate_55-64": "number",
+              "rate_65+": "number",
+              "participants_Total": "number",
+              "participants_Male": "number",
+              "participants_Female": "number",
+              "participants_15-17": "number",
+              "participants_18-24": "number",
+              "participants_25-34": "number",
+              "participants_35-44": "number",
+              "participants_45-54": "number",
+              "participants_55-64": "number",
+              "participants_65+": "number"
+            }
+          }
+        },
+        "key": "activity",
+        "fields": [
+          "rate_15-17",
+          "rate_18-24",
+          "rate_25-34",
+          "rate_35-44",
+          "rate_45-54",
+          "rate_55-64",
+          "rate_65+",
+          "participants_15-17",
+          "participants_18-24"
+        ]
+      }
+    },
+    {
+      "calculate": "datum.age_group == '15-24' ? (toNumber(datum['participants_15-17']) + toNumber(datum['participants_18-24'])) / (toNumber(datum['participants_15-17']) / toNumber(datum['rate_15-17']) + toNumber(datum['participants_18-24']) / toNumber(datum['rate_18-24'])) : toNumber(datum['rate_' + datum.age_group])",
+      "as": "Recreational walking"
+    }
+  ],
+  "encoding": {
+    "y": {
+      "field": "age_group",
+      "type": "ordinal",
+      "sort": ["15-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+      "title": "Age group"
+    }
+  },
+  "layer": [
+    {
+      "mark": {"type": "rule"},
+      "encoding": {
+        "x": {"field": "Walk to work", "type": "quantitative"},
+        "x2": {"field": "Recreational walking"},
+        "color": {"condition": {"test": "datum.age_group == '55-64'", "value": "#ad8a4e"}, "value": "#cfc8b6"},
+        "strokeWidth": {"condition": {"test": "datum.age_group == '55-64'", "value": 5}, "value": 2}
+      }
+    },
+    {
+      "transform": [{"fold": ["Recreational walking", "Walk to work"], "as": ["measure", "share"]}],
+      "mark": {"type": "point", "filled": true, "size": 110, "opacity": 1},
+      "encoding": {
+        "x": {
+          "field": "share",
+          "type": "quantitative",
+          "title": "Share of age group",
+          "scale": {"domain": [0, 0.8]},
+          "axis": {"format": "%", "tickCount": 5}
+        },
+        "color": {
+          "field": "measure",
+          "type": "nominal",
+          "title": null,
+          "scale": {"domain": ["Recreational walking", "Walk to work"], "range": ["#0f5c5e", "#7fb8ad"]},
+          "legend": {"orient": "top"}
+        },
+        "tooltip": [
+          {"field": "age_group", "title": "Age group"},
+          {"field": "measure", "title": "Measure"},
+          {"field": "share", "type": "quantitative", "format": ".1%", "title": "Share"}
+        ]
+      }
+    }
+  ],
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  },
+  "title": {
+    "text": ["Widest gap, at 55–64 (gold line): 66% walk for leisure", "but only 3% walk to work"],
+    "orient": "bottom",
+    "anchor": "start",
+    "offset": 12,
+    "fontSize": 12,
+    "fontWeight": 600,
+    "color": "#1f2e22",
+    "lineHeight": 16
+  }
+}

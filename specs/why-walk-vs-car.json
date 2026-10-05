@@ -1,0 +1,119 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Scatter plot: walking vs car share of commuters across Victoria's 66 statistical regions (Census 2021)",
+  "width": "container",
+  "height": 380,
+  "data": {
+    "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "Tot_P": "number",
+        "Worked_home_P": "number",
+        "Did_not_go_to_work_P": "number",
+        "Method_travel_to_work_ns_P": "number",
+        "One_method_Walked_only_P": "number",
+        "One_method_Car_as_driver_P": "number",
+        "One_method_Car_as_passenger_P": "number",
+        "SA3_CODE_2021": "string"
+      }
+    }
+  },
+  "transform": [
+    {"calculate": "toString(datum.SA3_CODE_2021)", "as": "sa3_code"},
+    {"filter": "substring(datum.sa3_code, 0, 2) != '29'"},
+    {"calculate": "substring(datum.sa3_code, 0, 3)", "as": "sa4"},
+    {
+      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle & outer Melbourne' : 'Regional Victoria'",
+      "as": "region_group"
+    },
+    {
+      "lookup": "sa3_code",
+      "from": {
+        "data": {"url": "data/victoria_sa3_2021.topojson", "format": {"type": "topojson", "feature": "sa3"}},
+        "key": "properties.SA3_CODE_2021"
+      },
+      "as": "geo"
+    },
+    {"calculate": "datum.geo.properties.SA3_NAME_2021", "as": "sa3_name"},
+    {"calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100", "as": "walked_pct"},
+    {
+      "calculate": "datum.Tot_P - datum.Worked_home_P - datum.Did_not_go_to_work_P - datum.Method_travel_to_work_ns_P",
+      "as": "commuters"
+    },
+    {"calculate": "datum.One_method_Walked_only_P / datum.commuters * 100", "as": "walk_share"},
+    {
+      "calculate": "(datum.One_method_Car_as_driver_P + datum.One_method_Car_as_passenger_P) / datum.commuters * 100",
+      "as": "car_share"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "car_share",
+      "type": "quantitative",
+      "title": "Travelled to work by car (%)",
+      "scale": {"domain": [30, 95]}
+    },
+    "y": {"field": "walk_share", "type": "quantitative", "title": "Walked to work (%)"}
+  },
+  "layer": [
+    {
+      "transform": [{"regression": "walk_share", "on": "car_share"}],
+      "mark": {"type": "line", "color": "#9a9588", "strokeDash": [5, 4], "strokeWidth": 1.5}
+    },
+    {
+      "params": [{"name": "region_pick", "select": {"type": "point", "fields": ["region_group"]}, "bind": "legend"}],
+      "mark": {"type": "circle", "size": 70, "stroke": "#ffffff", "strokeWidth": 0.8},
+      "encoding": {
+        "color": {
+          "field": "region_group",
+          "type": "nominal",
+          "title": "Region type",
+          "scale": {
+            "domain": ["Inner Melbourne", "Middle & outer Melbourne", "Regional Victoria"],
+            "range": ["#7b5c8f", "#5f6b73", "#b5566b"]
+          },
+          "legend": {"orient": "top", "title": null, "direction": "horizontal"}
+        },
+        "opacity": {"condition": {"param": "region_pick", "value": 0.9}, "value": 0.12},
+        "tooltip": [
+          {"field": "sa3_name", "title": "Region"},
+          {"field": "region_group", "title": "Region type"},
+          {"field": "walk_share", "type": "quantitative", "format": ".1f", "title": "Walked (%)"},
+          {"field": "car_share", "type": "quantitative", "format": ".1f", "title": "Car (%)"},
+          {"field": "commuters", "type": "quantitative", "format": ",", "title": "People who travelled to work"}
+        ]
+      }
+    },
+    {
+      "transform": [{"filter": "datum.sa3_name == 'Melbourne City'"}],
+      "mark": {"type": "text", "align": "left", "dx": 10, "fontSize": 11, "fontWeight": 500, "color": "#1f2e22"},
+      "encoding": {"text": {"value": "← Melbourne City: 1 in 4 commuters walk"}}
+    }
+  ],
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}

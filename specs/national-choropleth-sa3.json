@@ -1,0 +1,149 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Share of employed people who walked to work, Victorian statistical regions (Census 2021)",
+  "width": "container",
+  "height": 420,
+  "params": [
+    {
+      "name": "view",
+      "value": "All of Victoria",
+      "bind": {"input": "select", "options": ["All of Victoria", "Greater Melbourne"], "name": "Zoom to: "}
+    }
+  ],
+  "data": {
+    "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
+    "format": {
+      "type": "csv",
+      "parse": {"SA3_CODE_2021": "string", "Tot_P": "number", "One_method_Walked_only_P": "number"}
+    }
+  },
+  "transform": [
+    {"calculate": "toString(datum.SA3_CODE_2021)", "as": "sa3_code"},
+    {"filter": "substring(datum.sa3_code, 0, 2) != '29'"},
+    {"calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100", "as": "walked_pct"},
+    {
+      "lookup": "sa3_code",
+      "from": {
+        "data": {"url": "data/victoria_sa3_2021.topojson", "format": {"type": "topojson", "feature": "sa3"}},
+        "key": "properties.SA3_CODE_2021"
+      },
+      "as": "geo"
+    },
+    {"calculate": "datum.geo.properties.SA3_NAME_2021", "as": "sa3_name"},
+    {
+      "calculate": "indexof(['206','207','208','209','210','211','212','213','214'], substring(datum.sa3_code, 0, 3)) >= 0",
+      "as": "in_greater_melbourne"
+    },
+    {"filter": "view == 'All of Victoria' || datum.in_greater_melbourne"}
+  ],
+  "projection": {"type": "conicEqualArea", "parallels": [-18, -36], "rotate": [-132, 0]},
+  "config": {
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "legend": {"labelColor": "#5b6058", "titleColor": "#1f2e22", "labelFontSize": 11, "titleFontSize": 12},
+    "text": {"font": "IBM Plex Sans"}
+  },
+  "layer": [
+    {
+      "params": [{"name": "hover", "select": {"type": "point", "on": "pointerover", "clear": "pointerout"}}],
+      "mark": {"type": "geoshape"},
+      "encoding": {
+        "shape": {"field": "geo", "type": "geojson"},
+        "color": {
+          "field": "walked_pct",
+          "type": "quantitative",
+          "title": "Walked to work (%)",
+          "scale": {
+            "type": "threshold",
+            "domain": [1, 2, 4, 6, 10],
+            "range": ["#f1f5ec", "#d3e3cf", "#a6c8b1", "#6fa493", "#2f7a72", "#0b4547"]
+          },
+          "legend": {"orient": "top", "direction": "horizontal", "format": ".0f"}
+        },
+        "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
+        "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2.5}, "value": 0.6},
+        "order": {"condition": {"param": "hover", "empty": false, "value": 1}, "value": 0},
+        "tooltip": [
+          {"field": "sa3_name", "title": "Region"},
+          {"field": "walked_pct", "type": "quantitative", "format": ".1f", "title": "Walked to work (%)"},
+          {
+            "field": "One_method_Walked_only_P",
+            "type": "quantitative",
+            "format": ",",
+            "title": "People who walked"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "view": "All of Victoria",
+            "lon": 144.963,
+            "lat": -37.814,
+            "lon2": 145.55,
+            "lat2": -39.05,
+            "tlon": 145.55,
+            "tlat": -39.25
+          },
+          {
+            "view": "Greater Melbourne",
+            "lon": 144.963,
+            "lat": -37.814,
+            "lon2": 144.86,
+            "lat2": -38.02,
+            "tlon": 144.86,
+            "tlat": -38.06
+          }
+        ]
+      },
+      "transform": [{"filter": "datum.view == view"}],
+      "mark": {"type": "rule", "color": "#1f2e22", "strokeWidth": 0.8},
+      "encoding": {
+        "longitude": {"field": "lon", "type": "quantitative"},
+        "latitude": {"field": "lat", "type": "quantitative"},
+        "longitude2": {"field": "lon2"},
+        "latitude2": {"field": "lat2"}
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "view": "All of Victoria",
+            "lon": 144.963,
+            "lat": -37.814,
+            "lon2": 145.55,
+            "lat2": -39.05,
+            "tlon": 145.55,
+            "tlat": -39.25
+          },
+          {
+            "view": "Greater Melbourne",
+            "lon": 144.963,
+            "lat": -37.814,
+            "lon2": 144.86,
+            "lat2": -38.02,
+            "tlon": 144.86,
+            "tlat": -38.06
+          }
+        ]
+      },
+      "transform": [{"filter": "datum.view == view"}],
+      "mark": {
+        "type": "text",
+        "fontSize": 11,
+        "fontWeight": 600,
+        "color": "#1f2e22",
+        "baseline": "top",
+        "lineHeight": 13
+      },
+      "encoding": {
+        "longitude": {"field": "tlon", "type": "quantitative"},
+        "latitude": {"field": "tlat", "type": "quantitative"},
+        "text": {"value": ["Melbourne City", "12.1% walk to work"]}
+      }
+    }
+  ]
+}

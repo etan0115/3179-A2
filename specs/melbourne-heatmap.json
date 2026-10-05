@@ -1,0 +1,134 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Heatmap: average pedestrians per sensor per hour, by day of week and hour of day (2025)",
+  "width": "container",
+  "height": 260,
+  "data": {
+    "url": "data/melbourne_weekday_hour_2025.csv",
+    "format": {"type": "csv", "parse": {"hour": "number", "total_count": "number", "sensor_hours": "number"}}
+  },
+  "transform": [
+    {"calculate": "datum.total_count / datum.sensor_hours", "as": "avg_per_sensor"},
+    {
+      "calculate": "datum.hour == 0 ? '12am' : datum.hour < 12 ? datum.hour + 'am' : datum.hour == 12 ? '12pm' : (datum.hour - 12) + 'pm'",
+      "as": "hour_label"
+    }
+  ],
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  },
+  "layer": [
+    {
+      "mark": {"type": "rect", "stroke": "#ffffff", "strokeWidth": 1},
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "ordinal",
+          "title": "Hour of day",
+          "axis": {
+            "labelAngle": 0,
+            "labelExpr": "datum.value % 3 == 0 ? (datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm') : ''"
+          }
+        },
+        "y": {
+          "field": "weekday",
+          "type": "ordinal",
+          "sort": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "title": null
+        },
+        "color": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {"range": ["#f3efe4", "#5c9a86", "#0f5c5e", "#08393a"]},
+          "legend": {"orient": "top", "direction": "horizontal", "gradientLength": 220, "offset": 32}
+        },
+        "tooltip": [
+          {"field": "weekday", "title": "Day"},
+          {"field": "hour_label", "title": "Hour starting"},
+          {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "format": ",.0f",
+            "title": "Average pedestrians per sensor"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [{"filter": "datum.hour == 17 && indexof(['Saturday','Sunday'], datum.weekday) < 0"}],
+      "mark": {"type": "rect", "fill": null, "stroke": "#ad8a4e", "strokeWidth": 2},
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "ordinal",
+          "title": "Hour of day",
+          "axis": {
+            "labelAngle": 0,
+            "labelExpr": "datum.value % 3 == 0 ? (datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm') : ''"
+          }
+        },
+        "y": {
+          "field": "weekday",
+          "type": "ordinal",
+          "sort": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "title": null
+        }
+      }
+    },
+    {
+      "transform": [{"filter": "datum.hour == 17 && datum.weekday == 'Monday'"}],
+      "mark": {
+        "type": "text",
+        "baseline": "bottom",
+        "dy": -4,
+        "fontSize": 11,
+        "fontWeight": 600,
+        "color": "#1f2e22",
+        "align": "right",
+        "dx": -4
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "ordinal",
+          "title": "Hour of day",
+          "axis": {
+            "labelAngle": 0,
+            "labelExpr": "datum.value % 3 == 0 ? (datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm') : ''"
+          }
+        },
+        "y": {
+          "field": "weekday",
+          "type": "ordinal",
+          "sort": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "title": null,
+          "bandPosition": 0
+        },
+        "text": {"value": "Weekday evening rush (5pm)"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Radial charts: average pedestrians per sensor for each hour of the day, weekdays vs weekends, City of Melbourne 2025",
+  "data": {
+    "url": "data/melbourne_weekday_hour_2025.csv",
+    "format": {"type": "csv", "parse": {"hour": "number", "total_count": "number", "sensor_hours": "number"}}
+  },
+  "transform": [
+    {
+      "calculate": "indexof(['Saturday','Sunday'], datum.weekday) >= 0 ? 'Weekends' : 'Weekdays'",
+      "as": "day_type"
+    },
+    {
+      "aggregate": [
+        {"op": "sum", "field": "total_count", "as": "total"},
+        {"op": "sum", "field": "sensor_hours", "as": "hours"}
+      ],
+      "groupby": ["day_type", "hour"]
+    },
+    {"calculate": "datum.total / datum.hours", "as": "avg_per_sensor"},
+    {
+      "calculate": "datum.hour == 0 ? '12am' : datum.hour < 12 ? datum.hour + 'am' : datum.hour == 12 ? '12pm' : (datum.hour - 12) + 'pm'",
+      "as": "hour_label"
+    },
+    {"calculate": "datum.hour + 1", "as": "hour_end"}
+  ],
+  "facet": {
+    "column": {
+      "field": "day_type",
+      "type": "nominal",
+      "title": null,
+      "sort": ["Weekdays", "Weekends"],
+      "header": {"labelFontSize": 14, "labelFontWeight": 600, "labelColor": "#1f2e22"}
+    }
+  },
+  "spec": {
+    "width": 340,
+    "height": 380,
+    "layer": [
+      {
+        "mark": {"type": "arc", "innerRadius": 18, "padAngle": 0.02, "cornerRadius": 2, "color": "#0f5c5e"},
+        "encoding": {
+          "radius": {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "scale": {"type": "sqrt", "zero": true, "rangeMin": 18, "rangeMax": 135}
+          },
+          "opacity": {"field": "avg_per_sensor", "type": "quantitative", "legend": null, "scale": {"range": [0.35, 1]}},
+          "tooltip": [
+            {"field": "day_type", "title": "Days"},
+            {"field": "hour_label", "title": "Hour starting"},
+            {
+              "field": "avg_per_sensor",
+              "type": "quantitative",
+              "format": ",.0f",
+              "title": "Average pedestrians per sensor"
+            }
+          ],
+          "theta": {"field": "hour", "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}},
+          "theta2": {"field": "hour_end"},
+          "stroke": {
+            "condition": {"test": "datum.day_type == 'Weekdays' && (datum.hour == 8 || datum.hour == 17)", "value": "#ad8a4e"},
+            "value": "#ffffff"
+          },
+          "strokeWidth": {
+            "condition": {"test": "datum.day_type == 'Weekdays' && (datum.hour == 8 || datum.hour == 17)", "value": 2.5},
+            "value": 0
+          }
+        }
+      },
+      {
+        "transform": [{"filter": "datum.hour % 3 == 0"}],
+        "mark": {
+          "type": "text",
+          "radius": 152,
+          "fontSize": 11,
+          "color": "#5b6058",
+          "align": "center",
+          "baseline": "middle"
+        },
+        "encoding": {
+          "text": {"field": "hour_label"},
+          "theta": {"field": "hour", "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}}
+        }
+      },
+      {
+        "transform": [
+          {"filter": "datum.hour == 12"},
+          {
+            "calculate": "datum.day_type == 'Weekdays' ? ['Two rush hours:', 'morning (8am) and evening (5pm)'] : ['No rush hours:', 'one long afternoon peak']",
+            "as": "note"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "radius": 182,
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#1f2e22",
+          "align": "center",
+          "baseline": "top",
+          "lineHeight": 14
+        },
+        "encoding": {
+          "theta": {"datum": 12, "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}},
+          "text": {"field": "note"}
+        }
+      }
+    ]
+  },
+  "resolve": {"scale": {"radius": "shared"}},
+  "config": {
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "facet": {"spacing": 60},
+    "text": {"font": "IBM Plex Sans"}
+  }
+}

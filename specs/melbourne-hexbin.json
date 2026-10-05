@@ -1,0 +1,193 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Hex-bin map: City of Melbourne pedestrian sensors grouped into hexagons, coloured by total pedestrians in 2025",
+  "width": "container",
+  "height": 420,
+  "params": [
+    {
+      "name": "hex_km",
+      "value": 0.2,
+      "bind": {"input": "range", "min": 0.15, "max": 0.6, "step": 0.05, "name": "Hexagon size (km): "}
+    }
+  ],
+  "projection": {"type": "mercator", "center": [144.952, -37.81], "scale": 400000},
+  "layer": [
+    {
+      "data": {"url": "data/melbourne_city_sa2.topojson", "format": {"type": "topojson", "feature": "sa2"}},
+      "mark": {"type": "geoshape", "fill": "#efe9da", "stroke": "#ffffff", "strokeWidth": 1.2, "clip": true}
+    },
+    {
+      "data": {
+        "url": "data/melbourne_sensor_totals_2025.csv",
+        "format": {"type": "csv", "parse": {"Location_ID": "number", "total_2025": "number"}}
+      },
+      "transform": [
+        {
+          "lookup": "Location_ID",
+          "from": {
+            "data": {"url": "data/melbourne_sensor_locations.csv"},
+            "key": "Location_ID",
+            "fields": ["Sensor_Description", "Latitude", "Longitude"]
+          }
+        },
+        {"filter": "isValid(datum.Latitude)"},
+        {"calculate": "(toNumber(datum.Longitude) - 144.9603) * 87.85", "as": "x_km"},
+        {"calculate": "(toNumber(datum.Latitude) - (-37.813)) * 111.2", "as": "y_km"},
+        {"calculate": "sqrt(3) * hex_km", "as": "hex_w"},
+        {"calculate": "1.5 * hex_km", "as": "hex_h"},
+        {"calculate": "floor(datum.y_km / datum.hex_h)", "as": "row_a"},
+        {"calculate": "datum.row_a + 1", "as": "row_b"},
+        {"calculate": "abs(datum.row_a % 2) == 1 ? datum.hex_w / 2 : 0", "as": "shift_a"},
+        {"calculate": "abs(datum.row_b % 2) == 1 ? datum.hex_w / 2 : 0", "as": "shift_b"},
+        {
+          "calculate": "round((datum.x_km - datum.shift_a) / datum.hex_w) * datum.hex_w + datum.shift_a",
+          "as": "cx_a"
+        },
+        {
+          "calculate": "round((datum.x_km - datum.shift_b) / datum.hex_w) * datum.hex_w + datum.shift_b",
+          "as": "cx_b"
+        },
+        {
+          "calculate": "pow(datum.x_km - datum.cx_a, 2) + pow(datum.y_km - datum.row_a * datum.hex_h, 2)",
+          "as": "dist_a"
+        },
+        {
+          "calculate": "pow(datum.x_km - datum.cx_b, 2) + pow(datum.y_km - datum.row_b * datum.hex_h, 2)",
+          "as": "dist_b"
+        },
+        {"calculate": "datum.dist_a <= datum.dist_b ? datum.cx_a : datum.cx_b", "as": "hex_x"},
+        {
+          "calculate": "datum.dist_a <= datum.dist_b ? datum.row_a * datum.hex_h : datum.row_b * datum.hex_h",
+          "as": "hex_y"
+        },
+        {
+          "aggregate": [{"op": "sum", "field": "total_2025", "as": "pedestrians"}, {"op": "count", "as": "sensors"}],
+          "groupby": ["hex_x", "hex_y"]
+        },
+        {"calculate": "144.9603 + datum.hex_x / 87.85", "as": "hex_lon"},
+        {"calculate": "-37.813 + datum.hex_y / 111.2", "as": "hex_lat"},
+        {
+          "calculate": "{'type': 'Polygon', 'coordinates': [[[datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2], [datum.hex_lon + 0 * hex_km / 87.85, datum.hex_lat + -1 * hex_km / 111.2], [datum.hex_lon + -0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2], [datum.hex_lon + -0.866 * hex_km / 87.85, datum.hex_lat + 0.5 * hex_km / 111.2], [datum.hex_lon + 0 * hex_km / 87.85, datum.hex_lat + 1 * hex_km / 111.2], [datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + 0.5 * hex_km / 111.2], [datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2]]]}",
+          "as": "hexagon"
+        }
+      ],
+      "layer": [
+        {
+          "params": [{"name": "hover", "select": {"type": "point", "on": "pointerover", "clear": "pointerout"}}],
+          "mark": {"type": "geoshape", "clip": true},
+          "encoding": {
+            "shape": {"field": "hexagon", "type": "geojson"},
+            "color": {
+              "field": "pedestrians",
+              "type": "quantitative",
+              "title": "Pedestrians in 2025 (log scale)",
+              "scale": {"type": "log", "range": ["#eef3e9", "#8fbba5", "#0f5c5e", "#08393a"]},
+              "legend": {"orient": "top", "direction": "horizontal", "format": "~s", "gradientLength": 220}
+            },
+            "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
+            "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2.5}, "value": 1},
+            "order": {"condition": {"param": "hover", "empty": false, "value": 1}, "value": 0},
+            "tooltip": [
+              {"field": "sensors", "title": "Sensors in this hexagon"},
+              {"field": "pedestrians", "type": "quantitative", "format": ",", "title": "Pedestrians in 2025"}
+            ]
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [{"op": "row_number", "as": "rank"}],
+              "sort": [{"field": "pedestrians", "order": "descending"}]
+            },
+            {"filter": "datum.rank == 1"}
+          ],
+          "mark": {"type": "geoshape", "fill": null, "strokeWidth": 3.5, "clip": true},
+          "encoding": {
+            "shape": {"field": "hexagon", "type": "geojson"},
+            "stroke": {
+              "datum": "Busiest hexagon",
+              "type": "nominal",
+              "scale": {"range": ["#ad8a4e"]},
+              "legend": {
+                "title": null,
+                "orient": "bottom",
+                "symbolType": "square",
+                "symbolSize": 220,
+                "labelFontSize": 12,
+                "encode": {"symbols": {"update": {"fill": {"value": "transparent"}, "strokeWidth": {"value": 3.5}}}},
+                "direction": "horizontal"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "data": {
+        "url": "data/melbourne_sensor_totals_2025.csv",
+        "format": {"type": "csv", "parse": {"Location_ID": "number"}}
+      },
+      "transform": [
+        {
+          "lookup": "Location_ID",
+          "from": {
+            "data": {"url": "data/melbourne_sensor_locations.csv"},
+            "key": "Location_ID",
+            "fields": ["Latitude", "Longitude"]
+          }
+        },
+        {"filter": "isValid(datum.Latitude)"}
+      ],
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 14,
+        "color": "#ffffff",
+        "stroke": "#1f2e22",
+        "strokeWidth": 0.6,
+        "opacity": 0.9,
+        "clip": true
+      },
+      "encoding": {
+        "longitude": {"field": "Longitude", "type": "quantitative"},
+        "latitude": {"field": "Latitude", "type": "quantitative"},
+        "shape": {
+          "datum": "Pedestrian sensor",
+          "type": "nominal",
+          "scale": {"range": ["circle"]},
+          "legend": {
+            "title": null,
+            "orient": "bottom",
+            "symbolSize": 40,
+            "labelFontSize": 12,
+            "encode": {
+              "symbols": {
+                "update": {
+                  "fill": {"value": "#ffffff"},
+                  "stroke": {"value": "#1f2e22"},
+                  "strokeWidth": {"value": 1},
+                  "opacity": {"value": 1}
+                }
+              }
+            },
+            "direction": "horizontal",
+            "labelLimit": 220
+          }
+        }
+      }
+    }
+  ],
+  "config": {
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleLimit": 300
+    },
+    "text": {"font": "IBM Plex Sans"},
+    "axis": {"labelFontSize": 12}
+  }
+}

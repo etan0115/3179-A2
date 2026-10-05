@@ -1,0 +1,95 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Proportional symbol map: annual pedestrians counted at each City of Melbourne sensor, 2025",
+  "width": "container",
+  "height": 420,
+  "projection": {"type": "mercator", "center": [144.952, -37.81], "scale": 400000},
+  "layer": [
+    {
+      "data": {"url": "data/melbourne_city_sa2.topojson", "format": {"type": "topojson", "feature": "sa2"}},
+      "mark": {"type": "geoshape", "fill": "#efe9da", "stroke": "#ffffff", "strokeWidth": 1.2, "clip": true},
+      "encoding": {"tooltip": {"field": "properties.SA2_NAME21", "title": "Area"}}
+    },
+    {
+      "data": {
+        "url": "data/melbourne_sensor_totals_2025.csv",
+        "format": {"type": "csv", "parse": {"Location_ID": "number", "total_2025": "number"}}
+      },
+      "transform": [
+        {
+          "lookup": "Location_ID",
+          "from": {
+            "data": {"url": "data/melbourne_sensor_locations.csv"},
+            "key": "Location_ID",
+            "fields": ["Sensor_Description", "Latitude", "Longitude"]
+          }
+        },
+        {"filter": "isValid(datum.Latitude)"},
+        {"window": [{"op": "row_number", "as": "rank"}], "sort": [{"field": "total_2025", "order": "descending"}]}
+      ],
+      "layer": [
+        {
+          "params": [{"name": "hover", "select": {"type": "point", "on": "pointerover", "clear": "pointerout"}}],
+          "mark": {"type": "circle", "color": "#0f5c5e", "opacity": 0.55, "clip": true},
+          "encoding": {
+            "longitude": {"field": "Longitude", "type": "quantitative"},
+            "latitude": {"field": "Latitude", "type": "quantitative"},
+            "size": {
+              "field": "total_2025",
+              "type": "quantitative",
+              "title": "Pedestrians in 2025",
+              "scale": {"domain": [0, 14200000], "range": [0, 1200]},
+              "legend": {"orient": "top", "format": "~s", "values": [1000000, 5000000, 10000000], "direction": "horizontal"}
+            },
+            "order": {"field": "total_2025", "sort": "descending"},
+            "tooltip": [
+              {"field": "Sensor_Description", "title": "Sensor location"},
+              {"field": "total_2025", "type": "quantitative", "format": ",", "title": "Pedestrians in 2025"},
+              {"field": "rank", "title": "Rank (of 100)"}
+            ],
+            "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
+            "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2}, "value": 0.8}
+          }
+        },
+        {
+          "transform": [{"filter": "datum.rank == 1"}],
+          "mark": {"type": "circle", "opacity": 0.7, "stroke": "#1f2e22", "strokeWidth": 1.5},
+          "encoding": {
+            "size": {"field": "total_2025", "type": "quantitative"},
+            "longitude": {"field": "Longitude", "type": "quantitative"},
+            "latitude": {"field": "Latitude", "type": "quantitative"},
+            "color": {
+              "datum": "Busiest sensor: Flinders Lane and Swanston Street, 14.1 million",
+              "type": "nominal",
+              "scale": {"range": ["#ad8a4e"]},
+              "legend": {
+                "orient": "top",
+                "title": null,
+                "symbolType": "circle",
+                "symbolSize": 180,
+                "symbolStrokeColor": "#1f2e22",
+                "symbolStrokeWidth": 1.5,
+                "labelLimit": 320,
+                "labelFontSize": 11.5,
+                "labelExpr": "['Busiest sensor: Flinders Lane', 'and Swanston Street, 14.1 million']",
+                "symbolOpacity": 0.7
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "config": {
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleLimit": 300
+    },
+    "text": {"font": "IBM Plex Sans"}
+  }
+}

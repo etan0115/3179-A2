@@ -1,0 +1,87 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Pictogram: 100 adults, coloured by whether they walk for recreation",
+  "width": "container",
+  "height": 260,
+  "data": {
+    "url": "data/ausplay_participation_2025.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "rate_Total": "number",
+        "rate_Male": "number",
+        "rate_Female": "number",
+        "rate_15-17": "number",
+        "rate_18-24": "number",
+        "rate_25-34": "number",
+        "rate_35-44": "number",
+        "rate_45-54": "number",
+        "rate_55-64": "number",
+        "rate_65+": "number",
+        "participants_Total": "number",
+        "participants_Male": "number",
+        "participants_Female": "number",
+        "participants_15-17": "number",
+        "participants_18-24": "number",
+        "participants_25-34": "number",
+        "participants_35-44": "number",
+        "participants_45-54": "number",
+        "participants_55-64": "number",
+        "participants_65+": "number"
+      }
+    }
+  },
+  "transform": [
+    {"filter": "datum.activity == 'Walking (Recreational)'"},
+    {"calculate": "round(datum.rate_Total * 100)", "as": "walkers_per_100"},
+    {"calculate": "sequence(0, 100)", "as": "person"},
+    {"flatten": ["person"]},
+    {"calculate": "datum.person % 20", "as": "col"},
+    {"calculate": "floor(datum.person / 20)", "as": "row"},
+    {"calculate": "datum.person < datum.walkers_per_100 ? 'Walks for recreation' : 'Does not'", "as": "status"}
+  ],
+  "mark": {
+    "type": "point",
+    "filled": true,
+    "shape": "M0,-1.6 A0.45,0.45 0 1,1 0,-0.7 A0.45,0.45 0 1,1 0,-1.6 Z M-0.55,-0.55 L0.55,-0.55 L0.55,0.35 L0.3,0.35 L0.3,1.6 L-0.3,1.6 L-0.3,0.35 L-0.55,0.35 Z",
+    "size": 150,
+    "opacity": 1
+  },
+  "encoding": {
+    "x": {"field": "col", "type": "ordinal", "axis": null},
+    "y": {"field": "row", "type": "ordinal", "axis": null},
+    "color": {
+      "field": "status",
+      "type": "nominal",
+      "title": null,
+      "scale": {"domain": ["Walks for recreation", "Does not"], "range": ["#0f5c5e", "#d5d9db"]},
+      "legend": {"orient": "top", "direction": "horizontal", "title": null}
+    },
+    "tooltip": [{"field": "walkers_per_100", "type": "quantitative", "title": "Walkers per 100 adults"}]
+  },
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {"stroke": null},
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}
