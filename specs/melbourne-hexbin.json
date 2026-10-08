@@ -7,7 +7,7 @@
     {
       "name": "hex_km",
       "value": 0.2,
-      "bind": {"input": "range", "min": 0.15, "max": 0.6, "step": 0.05, "name": "Hexagon size (km): "}
+      "bind": {"input": "range", "min": 0.15, "max": 0.6, "step": 0.05, "name": "Hexagon size (kilometres): "}
     }
   ],
   "projection": {"type": "mercator", "center": [144.952, -37.81], "scale": 400000},
@@ -80,9 +80,9 @@
             "color": {
               "field": "pedestrians",
               "type": "quantitative",
-              "title": "Pedestrians in 2025 (log scale)",
+              "title": "Pedestrians in 2025 (logarithmic scale)",
               "scale": {"type": "log", "range": ["#eef3e9", "#8fbba5", "#0f5c5e", "#08393a"]},
-              "legend": {"orient": "top", "direction": "horizontal", "format": "~s", "gradientLength": 220}
+              "legend": {"orient": "top", "direction": "horizontal", "format": "~s", "labelExpr": "datum.value >= 1000000 ? format(datum.value / 1000000, '~') + ' million' : format(datum.value / 1000, '~') + ' thousand'", "gradientLength": 260, "values": [1000000, 10000000]}
             },
             "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
             "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2.5}, "value": 1},
@@ -178,6 +178,7 @@
     }
   ],
   "config": {
+    "background": "transparent",
     "font": "IBM Plex Sans",
     "view": {"stroke": null},
     "legend": {
