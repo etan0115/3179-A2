@@ -1,127 +1,387 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Share of employed people who walked to work, by state (Census 2021)",
+  "description": "Choropleth map: share of employed people who walked to work, by state and territory (Census 2021). Geometry from TopoJSON joined to Census CSV with a lookup transform.",
   "width": "container",
-  "height": 420,
-  "data": {
-    "url": "data/census2021_travel_to_work_by_state.csv",
-    "format": {
-      "type": "csv",
-      "parse": {
-        "New South Wales": "number",
-        "Victoria": "number",
-        "Queensland": "number",
-        "South Australia": "number",
-        "Western Australia": "number",
-        "Tasmania": "number",
-        "Northern Territory": "number",
-        "Australian Capital Territory": "number"
+  "height": 454,
+  "projection": {
+    "type": "conicEqualArea",
+    "parallels": [
+      -18,
+      -36
+    ],
+    "rotate": [
+      -132,
+      0
+    ],
+    "fit": {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            112.8,
+            -43.8
+          ],
+          [
+            112.8,
+            -27.1
+          ],
+          [
+            112.8,
+            -10.4
+          ],
+          [
+            133.3,
+            -43.8
+          ],
+          [
+            133.3,
+            -27.1
+          ],
+          [
+            133.3,
+            -10.4
+          ],
+          [
+            153.8,
+            -43.8
+          ],
+          [
+            153.8,
+            -27.1
+          ],
+          [
+            153.8,
+            -10.4
+          ]
+        ]
       }
     }
   },
-  "transform": [
-    {"filter": "datum.Mode == 'Walked only' || datum.Mode == 'Total'"},
-    {
-      "fold": [
-        "New South Wales",
-        "Victoria",
-        "Queensland",
-        "South Australia",
-        "Western Australia",
-        "Tasmania",
-        "Northern Territory",
-        "Australian Capital Territory"
-      ],
-      "as": ["state", "people"]
-    },
-    {"pivot": "Mode", "value": "people", "groupby": ["state"]},
-    {"calculate": "datum['Walked only'] / datum.Total * 100", "as": "walked_pct"},
-    {
-      "lookup": "state",
-      "from": {
-        "data": {
-          "url": "data/australia_states.topojson",
-          "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA2020"}
-        },
-        "key": "properties.STE_NAME21"
-      },
-      "as": "geo"
-    }
-  ],
-  "projection": {"type": "conicEqualArea", "parallels": [-18, -36], "rotate": [-132, 0]},
   "layer": [
     {
-      "params": [{"name": "hover", "select": {"type": "point", "on": "pointerover", "clear": "pointerout"}}],
-      "mark": {"type": "geoshape"},
-      "encoding": {
-        "shape": {"field": "geo", "type": "geojson"},
-        "color": {
-          "field": "walked_pct",
-          "type": "quantitative",
-          "title": "Walked to work (%)",
-          "scale": {"type": "threshold", "domain": [3, 5], "range": ["#dce9d5", "#5c9a86", "#0f5c5e"]},
-          "legend": {"orient": "top", "direction": "horizontal", "format": ".0f"}
-        },
-        "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
-        "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2.5}, "value": 1},
-        "order": {"condition": {"param": "hover", "empty": false, "value": 1}, "value": 0},
-        "tooltip": [
-          {"field": "state", "title": "State"},
-          {"field": "walked_pct", "type": "quantitative", "format": ".1f", "title": "Walked to work (%)"},
-          {"field": "Walked only", "type": "quantitative", "format": ",", "title": "People who walked"}
-        ]
+      "data": {
+        "sphere": true
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#d6e4e8",
+        "stroke": null,
+        "clip": true
       }
     },
     {
-      "data": {"values": [{"lon": 149.13, "lat": -35.45, "lon2": 151.6, "lat2": -38.75}]},
-      "mark": {"type": "rule", "color": "#1f2e22", "strokeWidth": 0.8},
-      "encoding": {
-        "longitude": {"field": "lon", "type": "quantitative"},
-        "latitude": {"field": "lat", "type": "quantitative"},
-        "longitude2": {"field": "lon2"},
-        "latitude2": {"field": "lat2"}
+      "data": {
+        "graticule": {
+          "step": [
+            5,
+            5
+          ]
+        }
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": null,
+        "stroke": "#ffffff",
+        "strokeWidth": 0.7,
+        "opacity": 0.8,
+        "clip": true
       }
     },
     {
+      "data": {
+        "url": "data/australia_states.topojson",
+        "format": {
+          "type": "topojson",
+          "feature": "STE_2021_AUST_GDA2020"
+        }
+      },
       "transform": [
         {
-          "lookup": "state",
+          "lookup": "properties.STE_NAME21",
           "from": {
             "data": {
-              "values": [
-                {"name": "Western Australia", "label": ["Western", "Australia"], "lon": 121.5, "lat": -26.0},
-                {"name": "Northern Territory", "label": ["Northern", "Territory", "7.6%"], "lon": 133.4, "lat": -19.5},
-                {"name": "South Australia", "label": ["South", "Australia"], "lon": 135.5, "lat": -30.0},
-                {"name": "Queensland", "label": ["Queensland"], "lon": 144.5, "lat": -22.5},
-                {"name": "New South Wales", "label": ["New South", "Wales"], "lon": 146.5, "lat": -32.3},
-                {"name": "Victoria", "label": ["Victoria"], "lon": 144.2, "lat": -37.0},
-                {"name": "Tasmania", "label": ["Tasmania"], "lon": 146.6, "lat": -44.3},
-                {
-                  "name": "Australian Capital Territory",
-                  "label": ["Australian Capital", "Territory"],
-                  "lon": 152.4,
-                  "lat": -39.4
-                }
-              ]
+              "url": "data/census2021_walked_to_work_by_state.csv"
             },
-            "key": "name",
-            "fields": ["label", "lon", "lat"]
+            "key": "state",
+            "fields": [
+              "walked_only",
+              "total_employed"
+            ]
           }
+        },
+        {
+          "filter": "isValid(datum.walked_only)"
+        },
+        {
+          "calculate": "datum.properties.STE_NAME21",
+          "as": "state"
+        },
+        {
+          "calculate": "datum.walked_only / datum.total_employed * 100",
+          "as": "walked_pct"
         }
       ],
-      "mark": {"type": "text", "fontSize": 11, "fontWeight": 500, "lineHeight": 13, "align": "center"},
-      "encoding": {
-        "longitude": {"field": "lon", "type": "quantitative"},
-        "latitude": {"field": "lat", "type": "quantitative"},
-        "text": {"field": "label"},
-        "color": {"condition": {"test": "datum.walked_pct >= 5", "value": "#ffffff"}, "value": "#1f2e22"}
-      }
+      "layer": [
+        {
+          "params": [
+            {
+              "name": "hover",
+              "select": {
+                "type": "point",
+                "on": "pointerover",
+                "clear": "pointerout"
+              }
+            }
+          ],
+          "mark": {
+            "type": "geoshape",
+            "clip": true
+          },
+          "encoding": {
+            "color": {
+              "field": "walked_pct",
+              "type": "quantitative",
+              "title": "Share of employed people who walked to work",
+              "scale": {
+                "type": "threshold",
+                "domain": [
+                  3,
+                  5
+                ],
+                "range": [
+                  "#dce9d5",
+                  "#5c9a86",
+                  "#0f5c5e"
+                ]
+              },
+              "legend": {
+                "orient": "top",
+                "direction": "horizontal",
+                "titleLimit": 500,
+                "labelOverlap": false,
+                "labelExpr": "datum.index == 0 ? '0%' : datum.label + '%'"
+              }
+            },
+            "stroke": {
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": "#1f2e22"
+              },
+              "value": "#ffffff"
+            },
+            "strokeWidth": {
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": 2.5
+              },
+              "value": 1
+            },
+            "order": {
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": 1
+              },
+              "value": 0
+            },
+            "tooltip": [
+              {
+                "field": "state",
+                "title": "State or territory"
+              },
+              {
+                "field": "walked_pct",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Percentage of workers who walked to work"
+              },
+              {
+                "field": "walked_only",
+                "type": "quantitative",
+                "format": ",",
+                "title": "People who walked to work"
+              },
+              {
+                "field": "total_employed",
+                "type": "quantitative",
+                "format": ",",
+                "title": "Employed people"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {
+                "lon": 149.13,
+                "lat": -35.45,
+                "lon2": 151.6,
+                "lat2": -38.75
+              }
+            ]
+          },
+          "mark": {
+            "type": "rule",
+            "color": "#1f2e22",
+            "strokeWidth": 0.8
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "longitude2": {
+              "field": "lon2"
+            },
+            "latitude2": {
+              "field": "lat2"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "lookup": "state",
+              "from": {
+                "data": {
+                  "values": [
+                    {
+                      "name": "Western Australia",
+                      "label": [
+                        "Western",
+                        "Australia"
+                      ],
+                      "lon": 121.5,
+                      "lat": -26.0
+                    },
+                    {
+                      "name": "Northern Territory",
+                      "label": [
+                        "Northern",
+                        "Territory",
+                        "7.6%"
+                      ],
+                      "lon": 133.4,
+                      "lat": -19.5
+                    },
+                    {
+                      "name": "South Australia",
+                      "label": [
+                        "South",
+                        "Australia"
+                      ],
+                      "lon": 135.5,
+                      "lat": -30.0
+                    },
+                    {
+                      "name": "Queensland",
+                      "label": [
+                        "Queensland"
+                      ],
+                      "lon": 144.5,
+                      "lat": -22.5
+                    },
+                    {
+                      "name": "New South Wales",
+                      "label": [
+                        "New South",
+                        "Wales"
+                      ],
+                      "lon": 146.5,
+                      "lat": -32.3
+                    },
+                    {
+                      "name": "Victoria",
+                      "label": [
+                        "Victoria"
+                      ],
+                      "lon": 144.2,
+                      "lat": -37.0
+                    },
+                    {
+                      "name": "Tasmania",
+                      "label": [
+                        "Tasmania"
+                      ],
+                      "lon": 146.6,
+                      "lat": -44.3
+                    },
+                    {
+                      "name": "Australian Capital Territory",
+                      "label": [
+                        "Australian Capital",
+                        "Territory"
+                      ],
+                      "lon": 152.4,
+                      "lat": -39.4
+                    }
+                  ]
+                },
+                "key": "name",
+                "fields": [
+                  "label",
+                  "lon",
+                  "lat"
+                ]
+              }
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "fontSize": 11,
+            "fontWeight": 500,
+            "lineHeight": 13,
+            "align": "center"
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "label"
+            },
+            "color": {
+              "condition": {
+                "test": "datum.walked_pct >= 5",
+                "value": "#ffffff"
+              },
+              "value": "#1f2e22"
+            }
+          }
+        }
+      ]
     }
   ],
   "config": {
+    "background": "transparent",
     "font": "IBM Plex Sans",
-    "view": {"stroke": null},
-    "legend": {"labelColor": "#5b6058", "titleColor": "#1f2e22", "labelFontSize": 11, "titleFontSize": 12},
-    "text": {"font": "IBM Plex Sans"}
+    "view": {
+      "stroke": null
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "gradientLength": 240,
+      "gradientThickness": 14
+    },
+    "text": {
+      "font": "IBM Plex Sans"
+    }
   }
 }
