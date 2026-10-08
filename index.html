@@ -321,6 +321,16 @@
     loadChart('why-walk-vs-car', 'specs/why-walk-vs-car.json');
     loadChart('why-mode-share', 'specs/why-mode-share.json');
 
+    // Hide any chart tooltip that is left behind when the page scrolls or the
+    // pointer leaves a chart.
+    function hideChartTooltip() {
+      const tip = document.getElementById('vg-tooltip-element');
+      if (tip) tip.classList.remove('visible');
+    }
+    ['scroll', 'wheel', 'touchmove', 'keydown', 'resize', 'blur'].forEach(evt =>
+      window.addEventListener(evt, hideChartTooltip, { passive: true }));
+    document.querySelectorAll('.chart-canvas').forEach(el =>
+      el.addEventListener('pointerleave', hideChartTooltip));
     const dots = document.querySelectorAll('.progress-dots a');
     const sectionsInView = document.querySelectorAll('section[id]');
 
