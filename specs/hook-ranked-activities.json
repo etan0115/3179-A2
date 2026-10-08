@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Lollipop chart: top 10 physical activities by adult participation rate (AusPlay 2025)",
   "width": "container",
-  "height": 260,
+  "height": 304,
   "data": {
     "url": "data/ausplay_participation_2025.csv",
     "format": {
@@ -41,6 +41,10 @@
     {
       "calculate": "datum.activity == 'Walking (Recreational)' ? format(datum.rate_Total, '.0%') : ''",
       "as": "value_label"
+    },
+    {
+      "calculate": "datum.activity == 'Fitness/Gym' ? 'Fitness and gym' : datum.activity == 'Running/jogging' ? 'Running and jogging' : datum.activity == 'Football/soccer' ? 'Football (soccer)' : datum.activity",
+      "as": "activity_label"
     }
   ],
   "encoding": {
@@ -83,8 +87,8 @@
           "scale": {"domain": ["Walking", "Other activity"], "range": ["#0f5c5e", "#d5d9db"]}
         },
         "tooltip": [
-          {"field": "activity", "type": "nominal", "title": "Activity"},
-          {"field": "rate_Total", "type": "quantitative", "format": ".1%", "title": "Participation"},
+          {"field": "activity_label", "type": "nominal", "title": "Activity"},
+          {"field": "rate_Total", "type": "quantitative", "format": ".1%", "title": "Participation rate"},
           {"field": "participants_Total", "type": "quantitative", "format": ",.0f", "title": "Participants"}
         ]
       }
