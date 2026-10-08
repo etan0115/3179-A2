@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Dumbbell: recreational walking (AusPlay) vs walking to work (Census) by age group",
   "width": "container",
-  "height": 240,
+  "height": 304,
   "data": {
     "url": "data/census2021_travel_to_work_by_age.csv",
     "format": {
@@ -28,6 +28,7 @@
     {"aggregate": [{"op": "sum", "field": "people", "as": "people"}], "groupby": ["age_group", "Mode"]},
     {"pivot": "Mode", "value": "people", "groupby": ["age_group"]},
     {"calculate": "datum['Walked only'] / datum.Total", "as": "Walk to work"},
+    {"calculate": "replace(replace(datum.age_group, '-', ' to '), '+', ' and over')", "as": "age_group_label"},
     {"calculate": "'Walking (Recreational)'", "as": "activity"},
     {
       "lookup": "activity",
@@ -116,9 +117,9 @@
           "legend": {"orient": "top"}
         },
         "tooltip": [
-          {"field": "age_group", "title": "Age group"},
+          {"field": "age_group_label", "title": "Age group"},
           {"field": "measure", "title": "Measure"},
-          {"field": "share", "type": "quantitative", "format": ".1%", "title": "Share"}
+          {"field": "share", "type": "quantitative", "format": ".1%", "title": "Percentage of people"}
         ]
       }
     }
