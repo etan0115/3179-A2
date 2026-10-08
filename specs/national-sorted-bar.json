@@ -2,83 +2,331 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Box plot: share of employed people who walked to work across Victoria's 66 statistical regions, by region type (Census 2021)",
   "width": "container",
-  "height": {"step": 100},
+  "height": 384,
   "data": {
     "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
     "format": {
       "type": "csv",
-      "parse": {"SA3_CODE_2021": "string", "Tot_P": "number", "One_method_Walked_only_P": "number"}
+      "parse": {
+        "SA3_CODE_2021": "string",
+        "Tot_P": "number",
+        "One_method_Walked_only_P": "number"
+      }
     }
   },
   "transform": [
-    {"calculate": "toString(datum.SA3_CODE_2021)", "as": "sa3_code"},
-    {"filter": "substring(datum.sa3_code, 0, 2) != '29'"},
-    {"calculate": "substring(datum.sa3_code, 0, 3)", "as": "sa4"},
     {
-      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle & outer Melbourne' : 'Regional Victoria'",
+      "calculate": "toString(datum.SA3_CODE_2021)",
+      "as": "sa3_code"
+    },
+    {
+      "filter": "substring(datum.sa3_code, 0, 2) != '29'"
+    },
+    {
+      "calculate": "substring(datum.sa3_code, 0, 3)",
+      "as": "sa4"
+    },
+    {
+      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle and outer Melbourne' : 'Regional Victoria'",
       "as": "region_group"
     },
     {
       "lookup": "sa3_code",
       "from": {
-        "data": {"url": "data/victoria_sa3_2021.topojson", "format": {"type": "topojson", "feature": "sa3"}},
+        "data": {
+          "url": "data/victoria_sa3_2021.topojson",
+          "format": {
+            "type": "topojson",
+            "feature": "sa3"
+          }
+        },
         "key": "properties.SA3_CODE_2021"
       },
       "as": "geo"
     },
-    {"calculate": "datum.geo.properties.SA3_NAME_2021", "as": "sa3_name"},
-    {"calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100", "as": "walked_pct"},
-    {"calculate": "(toNumber(datum.sa3_code) % 13) / 13 - 0.5", "as": "jitter"}
+    {
+      "calculate": "datum.geo.properties.SA3_NAME_2021",
+      "as": "sa3_name"
+    },
+    {
+      "calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100",
+      "as": "walked_pct"
+    },
+    {
+      "calculate": "(toNumber(datum.sa3_code) % 13) / 13 - 0.5",
+      "as": "jitter"
+    }
   ],
   "encoding": {
     "y": {
       "field": "region_group",
       "type": "nominal",
       "title": null,
-      "sort": ["Inner Melbourne", "Middle & outer Melbourne", "Regional Victoria"],
-      "axis": {"labelFontSize": 12, "labelLimit": 240},
-      "scale": {"paddingInner": 0, "paddingOuter": 0}
+      "sort": [
+        "Inner Melbourne",
+        "Middle and outer Melbourne",
+        "Regional Victoria"
+      ],
+      "axis": {
+        "labelFontSize": 12,
+        "labelLimit": 240
+      },
+      "scale": {
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
     },
-    "x": {"field": "walked_pct", "type": "quantitative", "title": "Walked to work (%)", "scale": {"domain": [0, 13]}}
+    "x": {
+      "field": "walked_pct",
+      "type": "quantitative",
+      "title": "Walked to work (%)",
+      "scale": {
+        "domain": [
+          0,
+          13
+        ]
+      },
+      "axis": {
+        "tickMinStep": 1
+      }
+    }
   },
   "layer": [
     {
+      "description": "Box plot built from explicit quartile calculations: box = middle 50% of regions, dark tick = median, whiskers = most extreme regions within 1.5 times the box width",
+      "transform": [
+        {
+          "joinaggregate": [
+            {
+              "op": "q1",
+              "field": "walked_pct",
+              "as": "q1"
+            },
+            {
+              "op": "median",
+              "field": "walked_pct",
+              "as": "median"
+            },
+            {
+              "op": "q3",
+              "field": "walked_pct",
+              "as": "q3"
+            },
+            {
+              "op": "count",
+              "as": "regions"
+            }
+          ],
+          "groupby": [
+            "region_group"
+          ]
+        },
+        {
+          "calculate": "datum.q3 - datum.q1",
+          "as": "iqr"
+        },
+        {
+          "filter": "datum.walked_pct >= datum.q1 - 1.5 * datum.iqr && datum.walked_pct <= datum.q3 + 1.5 * datum.iqr"
+        },
+        {
+          "aggregate": [
+            {
+              "op": "min",
+              "field": "walked_pct",
+              "as": "lower_whisker"
+            },
+            {
+              "op": "max",
+              "field": "walked_pct",
+              "as": "upper_whisker"
+            },
+            {
+              "op": "max",
+              "field": "q1",
+              "as": "q1"
+            },
+            {
+              "op": "max",
+              "field": "median",
+              "as": "median"
+            },
+            {
+              "op": "max",
+              "field": "q3",
+              "as": "q3"
+            },
+            {
+              "op": "max",
+              "field": "regions",
+              "as": "regions"
+            }
+          ],
+          "groupby": [
+            "region_group"
+          ]
+        }
+      ],
+      "layer": [
+        {
+          "mark": {
+            "type": "rule",
+            "color": "#8b8f83"
+          },
+          "encoding": {
+            "x": {
+              "field": "lower_whisker",
+              "type": "quantitative",
+              "title": "Walked to work (%)",
+              "axis": {
+                "tickMinStep": 1
+              }
+            },
+            "x2": {
+              "field": "upper_whisker"
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "bar",
+            "size": 38,
+            "opacity": 0.35
+          },
+          "encoding": {
+            "x": {
+              "field": "q1",
+              "type": "quantitative"
+            },
+            "x2": {
+              "field": "q3"
+            },
+            "color": {
+              "field": "region_group",
+              "type": "nominal",
+              "legend": null,
+              "scale": {
+                "domain": [
+                  "Inner Melbourne",
+                  "Middle and outer Melbourne",
+                  "Regional Victoria"
+                ],
+                "range": [
+                  "#7b5c8f",
+                  "#5f6b73",
+                  "#b5566b"
+                ]
+              }
+            },
+            "tooltip": [
+              {
+                "field": "region_group",
+                "title": "Region type"
+              },
+              {
+                "field": "regions",
+                "title": "Number of regions"
+              },
+              {
+                "field": "upper_whisker",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Highest percentage who walked to work (end of right whisker)"
+              },
+              {
+                "field": "q3",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Upper quartile (right edge of box)"
+              },
+              {
+                "field": "median",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Median (middle region)"
+              },
+              {
+                "field": "q1",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Lower quartile (left edge of box)"
+              },
+              {
+                "field": "lower_whisker",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Lowest percentage who walked to work (end of left whisker)"
+              }
+            ]
+          }
+        },
+        {
+          "mark": {
+            "type": "tick",
+            "size": 38,
+            "thickness": 2,
+            "color": "#1f2e22"
+          },
+          "encoding": {
+            "x": {
+              "field": "median",
+              "type": "quantitative"
+            }
+          }
+        }
+      ]
+    },
+    {
       "mark": {
-        "type": "boxplot",
-        "extent": 1.5,
-        "size": 38,
-        "outliers": false,
-        "median": {"color": "#1f2e22", "strokeWidth": 2},
-        "box": {"opacity": 0.35},
-        "rule": {"color": "#8b8f83"},
-        "ticks": false
+        "type": "circle",
+        "size": 40,
+        "opacity": 0.85,
+        "stroke": "#ffffff",
+        "strokeWidth": 0.8
       },
       "encoding": {
+        "yOffset": {
+          "field": "jitter",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              -0.5,
+              0.5
+            ],
+            "range": [
+              34,
+              66
+            ]
+          }
+        },
         "color": {
           "field": "region_group",
           "type": "nominal",
-          "legend": null,
-          "scale": {
-            "domain": ["Inner Melbourne", "Middle & outer Melbourne", "Regional Victoria"],
-            "range": ["#7b5c8f", "#5f6b73", "#b5566b"]
-          }
-        }
-      }
-    },
-    {
-      "mark": {"type": "circle", "size": 40, "opacity": 0.85, "stroke": "#ffffff", "strokeWidth": 0.8},
-      "encoding": {
-        "yOffset": {"field": "jitter", "type": "quantitative", "scale": {"domain": [-0.5, 0.5], "range": [34, 66]}},
-        "color": {"field": "region_group", "type": "nominal", "legend": null},
+          "legend": null
+        },
         "tooltip": [
-          {"field": "sa3_name", "title": "Region"},
-          {"field": "region_group", "title": "Region type"},
-          {"field": "walked_pct", "type": "quantitative", "format": ".1f", "title": "Walked to work (%)"}
+          {
+            "field": "sa3_name",
+            "title": "Region"
+          },
+          {
+            "field": "region_group",
+            "title": "Region type"
+          },
+          {
+            "field": "walked_pct",
+            "type": "quantitative",
+            "format": ".1f",
+            "title": "Percentage of workers who walked to work"
+          }
         ]
       }
     },
     {
-      "transform": [{"filter": "datum.sa3_name == 'Melbourne City'"}],
+      "transform": [
+        {
+          "filter": "datum.sa3_name == 'Melbourne City'"
+        }
+      ],
       "mark": {
         "type": "text",
         "align": "right",
@@ -89,14 +337,32 @@
         "color": "#1f2e22"
       },
       "encoding": {
-        "text": {"value": "Melbourne City 12.1%"},
-        "yOffset": {"field": "jitter", "type": "quantitative", "scale": {"domain": [-0.5, 0.5], "range": [34, 66]}}
+        "text": {
+          "value": "Melbourne City 12.1%"
+        },
+        "yOffset": {
+          "field": "jitter",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              -0.5,
+              0.5
+            ],
+            "range": [
+              34,
+              66
+            ]
+          }
+        }
       }
     }
   ],
   "config": {
+    "background": "transparent",
     "font": "IBM Plex Sans",
-    "view": {"stroke": null},
+    "view": {
+      "stroke": null
+    },
     "axis": {
       "labelColor": "#5b6058",
       "titleColor": "#1f2e22",
@@ -104,6 +370,11 @@
       "domainColor": "#c9c3b3",
       "tickColor": "#c9c3b3"
     },
-    "text": {"font": "IBM Plex Sans"}
+    "text": {
+      "font": "IBM Plex Sans"
+    },
+    "axisX": {
+      "tickCount": 13
+    }
   }
 }
