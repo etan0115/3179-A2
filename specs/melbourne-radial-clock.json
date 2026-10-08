@@ -34,20 +34,20 @@
     }
   },
   "spec": {
-    "width": 340,
-    "height": 380,
+    "width": 240,
+    "height": 320,
     "layer": [
       {
-        "mark": {"type": "arc", "innerRadius": 18, "padAngle": 0.02, "cornerRadius": 2, "color": "#0f5c5e"},
+        "mark": {"type": "arc", "innerRadius": 16, "padAngle": 0.02, "cornerRadius": 2, "color": "#0f5c5e"},
         "encoding": {
           "radius": {
             "field": "avg_per_sensor",
             "type": "quantitative",
-            "scale": {"type": "sqrt", "zero": true, "rangeMin": 18, "rangeMax": 135}
+            "scale": {"type": "sqrt", "zero": true, "rangeMin": 16, "rangeMax": 108}
           },
           "opacity": {"field": "avg_per_sensor", "type": "quantitative", "legend": null, "scale": {"range": [0.35, 1]}},
           "tooltip": [
-            {"field": "day_type", "title": "Days"},
+            {"field": "day_type", "title": "Type of day"},
             {"field": "hour_label", "title": "Hour starting"},
             {
               "field": "avg_per_sensor",
@@ -72,7 +72,7 @@
         "transform": [{"filter": "datum.hour % 3 == 0"}],
         "mark": {
           "type": "text",
-          "radius": 152,
+          "radius": 122,
           "fontSize": 11,
           "color": "#5b6058",
           "align": "center",
@@ -93,7 +93,7 @@
         ],
         "mark": {
           "type": "text",
-          "radius": 182,
+          "radius": 150,
           "fontSize": 11,
           "fontWeight": 600,
           "color": "#1f2e22",
@@ -110,9 +110,10 @@
   },
   "resolve": {"scale": {"radius": "shared"}},
   "config": {
+    "background": "transparent",
     "font": "IBM Plex Sans",
     "view": {"stroke": null},
-    "facet": {"spacing": 60},
+    "facet": {"spacing": 30},
     "text": {"font": "IBM Plex Sans"}
   }
 }
