@@ -131,14 +131,15 @@
       },
       "opacity": {"condition": {"param": "mode_pick", "value": 1}, "value": 0.15},
       "tooltip": [
-        {"field": "state", "title": "State"},
-        {"field": "mode_group", "title": "Travel"},
+        {"field": "state", "title": "State or territory"},
+        {"field": "mode_group", "title": "Travel method"},
         {"field": "share", "type": "quantitative", "format": ".1%", "title": "Share of workers"},
         {"field": "people", "type": "quantitative", "format": ",", "title": "People"}
       ]
     }
   },
   "config": {
+    "background": "transparent",
     "font": "IBM Plex Sans",
     "view": {"stroke": null},
     "facet": {"spacing": 20},
