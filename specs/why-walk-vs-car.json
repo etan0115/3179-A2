@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Scatter plot: walking vs car share of commuters across Victoria's 66 statistical regions (Census 2021)",
   "width": "container",
-  "height": 380,
+  "height": 638,
   "data": {
     "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
     "format": {
@@ -24,7 +24,7 @@
     {"filter": "substring(datum.sa3_code, 0, 2) != '29'"},
     {"calculate": "substring(datum.sa3_code, 0, 3)", "as": "sa4"},
     {
-      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle & outer Melbourne' : 'Regional Victoria'",
+      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle and outer Melbourne' : 'Regional Victoria'",
       "as": "region_group"
     },
     {
@@ -70,7 +70,7 @@
           "type": "nominal",
           "title": "Region type",
           "scale": {
-            "domain": ["Inner Melbourne", "Middle & outer Melbourne", "Regional Victoria"],
+            "domain": ["Inner Melbourne", "Middle and outer Melbourne", "Regional Victoria"],
             "range": ["#7b5c8f", "#5f6b73", "#b5566b"]
           },
           "legend": {"orient": "top", "title": null, "direction": "horizontal"}
@@ -79,8 +79,8 @@
         "tooltip": [
           {"field": "sa3_name", "title": "Region"},
           {"field": "region_group", "title": "Region type"},
-          {"field": "walk_share", "type": "quantitative", "format": ".1f", "title": "Walked (%)"},
-          {"field": "car_share", "type": "quantitative", "format": ".1f", "title": "Car (%)"},
+          {"field": "walk_share", "type": "quantitative", "format": ".1f", "title": "Percentage who walked to work"},
+          {"field": "car_share", "type": "quantitative", "format": ".1f", "title": "Percentage who travelled to work by car"},
           {"field": "commuters", "type": "quantitative", "format": ",", "title": "People who travelled to work"}
         ]
       }
