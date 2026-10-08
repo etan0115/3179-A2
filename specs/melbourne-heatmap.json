@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Heatmap: average pedestrians per sensor per hour, by day of week and hour of day (2025)",
   "width": "container",
-  "height": 260,
+  "height": 369,
   "data": {
     "url": "data/melbourne_weekday_hour_2025.csv",
     "format": {"type": "csv", "parse": {"hour": "number", "total_count": "number", "sensor_hours": "number"}}
@@ -66,7 +66,7 @@
           "legend": {"orient": "top", "direction": "horizontal", "gradientLength": 220, "offset": 32}
         },
         "tooltip": [
-          {"field": "weekday", "title": "Day"},
+          {"field": "weekday", "title": "Day of the week"},
           {"field": "hour_label", "title": "Hour starting"},
           {
             "field": "avg_per_sensor",
