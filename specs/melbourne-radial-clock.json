@@ -3,7 +3,14 @@
   "description": "Radial charts: average pedestrians per sensor for each hour of the day, weekdays vs weekends, City of Melbourne 2025",
   "data": {
     "url": "data/melbourne_weekday_hour_2025.csv",
-    "format": {"type": "csv", "parse": {"hour": "number", "total_count": "number", "sensor_hours": "number"}}
+    "format": {
+      "type": "csv",
+      "parse": {
+        "hour": "number",
+        "total_count": "number",
+        "sensor_hours": "number"
+      }
+    }
   },
   "transform": [
     {
@@ -12,25 +19,53 @@
     },
     {
       "aggregate": [
-        {"op": "sum", "field": "total_count", "as": "total"},
-        {"op": "sum", "field": "sensor_hours", "as": "hours"}
+        {
+          "op": "sum",
+          "field": "total_count",
+          "as": "total"
+        },
+        {
+          "op": "sum",
+          "field": "sensor_hours",
+          "as": "hours"
+        }
       ],
-      "groupby": ["day_type", "hour"]
+      "groupby": [
+        "day_type",
+        "hour"
+      ]
     },
-    {"calculate": "datum.total / datum.hours", "as": "avg_per_sensor"},
+    {
+      "calculate": "datum.total / datum.hours",
+      "as": "avg_per_sensor"
+    },
     {
       "calculate": "datum.hour == 0 ? '12am' : datum.hour < 12 ? datum.hour + 'am' : datum.hour == 12 ? '12pm' : (datum.hour - 12) + 'pm'",
       "as": "hour_label"
     },
-    {"calculate": "datum.hour + 1", "as": "hour_end"}
+    {
+      "calculate": "datum.hour + 1",
+      "as": "hour_end"
+    },
+    {
+      "calculate": "(datum.day_type == 'Weekdays' && (datum.hour == 12 || datum.hour == 17)) || (datum.day_type == 'Weekends' && datum.hour == 14) ? 'Peak hour' : 'Other hours'",
+      "as": "hour_type"
+    }
   ],
   "facet": {
     "column": {
       "field": "day_type",
       "type": "nominal",
       "title": null,
-      "sort": ["Weekdays", "Weekends"],
-      "header": {"labelFontSize": 14, "labelFontWeight": 600, "labelColor": "#1f2e22"}
+      "sort": [
+        "Weekdays",
+        "Weekends"
+      ],
+      "header": {
+        "labelFontSize": 14,
+        "labelFontWeight": 600,
+        "labelColor": "#1f2e22"
+      }
     }
   },
   "spec": {
@@ -38,17 +73,36 @@
     "height": 320,
     "layer": [
       {
-        "mark": {"type": "arc", "innerRadius": 16, "padAngle": 0.02, "cornerRadius": 2, "color": "#0f5c5e"},
+        "mark": {
+          "type": "arc",
+          "innerRadius": 16,
+          "padAngle": 0.02,
+          "cornerRadius": 2
+        },
         "encoding": {
           "radius": {
             "field": "avg_per_sensor",
             "type": "quantitative",
-            "scale": {"type": "sqrt", "zero": true, "rangeMin": 16, "rangeMax": 108}
+            "scale": {
+              "type": "sqrt",
+              "zero": true,
+              "rangeMin": 16,
+              "rangeMax": 108
+            }
           },
-          "opacity": {"field": "avg_per_sensor", "type": "quantitative", "legend": null, "scale": {"range": [0.35, 1]}},
           "tooltip": [
-            {"field": "day_type", "title": "Type of day"},
-            {"field": "hour_label", "title": "Hour starting"},
+            {
+              "field": "day_type",
+              "title": "Type of day"
+            },
+            {
+              "field": "hour_label",
+              "title": "Hour starting"
+            },
+            {
+              "field": "hour_type",
+              "title": "Hour type"
+            },
             {
               "field": "avg_per_sensor",
               "type": "quantitative",
@@ -56,20 +110,58 @@
               "title": "Average pedestrians per sensor"
             }
           ],
-          "theta": {"field": "hour", "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}},
-          "theta2": {"field": "hour_end"},
+          "theta": {
+            "field": "hour",
+            "type": "quantitative",
+            "scale": {
+              "domain": [
+                0,
+                24
+              ],
+              "range": [
+                0,
+                6.2832
+              ]
+            }
+          },
+          "theta2": {
+            "field": "hour_end"
+          },
           "stroke": {
-            "condition": {"test": "datum.day_type == 'Weekdays' && (datum.hour == 8 || datum.hour == 17)", "value": "#ad8a4e"},
             "value": "#ffffff"
           },
           "strokeWidth": {
-            "condition": {"test": "datum.day_type == 'Weekdays' && (datum.hour == 8 || datum.hour == 17)", "value": 2.5},
-            "value": 0
+            "value": 0.5
+          },
+          "color": {
+            "field": "hour_type",
+            "type": "nominal",
+            "title": null,
+            "scale": {
+              "domain": [
+                "Peak hour",
+                "Other hours"
+              ],
+              "range": [
+                "#c9a25a",
+                "#9fb8b0"
+              ]
+            },
+            "legend": {
+              "orient": "top",
+              "direction": "horizontal",
+              "symbolType": "square",
+              "labelFontSize": 12
+            }
           }
         }
       },
       {
-        "transform": [{"filter": "datum.hour % 3 == 0"}],
+        "transform": [
+          {
+            "filter": "datum.hour % 3 == 0"
+          }
+        ],
         "mark": {
           "type": "text",
           "radius": 122,
@@ -79,15 +171,32 @@
           "baseline": "middle"
         },
         "encoding": {
-          "text": {"field": "hour_label"},
-          "theta": {"field": "hour", "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}}
+          "text": {
+            "field": "hour_label"
+          },
+          "theta": {
+            "field": "hour",
+            "type": "quantitative",
+            "scale": {
+              "domain": [
+                0,
+                24
+              ],
+              "range": [
+                0,
+                6.2832
+              ]
+            }
+          }
         }
       },
       {
         "transform": [
-          {"filter": "datum.hour == 12"},
           {
-            "calculate": "datum.day_type == 'Weekdays' ? ['Two rush hours:', 'morning (8am) and evening (5pm)'] : ['No rush hours:', 'one long afternoon peak']",
+            "filter": "datum.hour == 12"
+          },
+          {
+            "calculate": "datum.day_type == 'Weekdays' ? ['Two peaks:', 'lunchtime (12pm) and evening (5pm)'] : ['One long afternoon:', 'busiest at 2pm']",
             "as": "note"
           }
         ],
@@ -102,18 +211,43 @@
           "lineHeight": 14
         },
         "encoding": {
-          "theta": {"datum": 12, "type": "quantitative", "scale": {"domain": [0, 24], "range": [0, 6.2832]}},
-          "text": {"field": "note"}
+          "theta": {
+            "datum": 12,
+            "type": "quantitative",
+            "scale": {
+              "domain": [
+                0,
+                24
+              ],
+              "range": [
+                0,
+                6.2832
+              ]
+            }
+          },
+          "text": {
+            "field": "note"
+          }
         }
       }
     ]
   },
-  "resolve": {"scale": {"radius": "shared"}},
+  "resolve": {
+    "scale": {
+      "radius": "shared"
+    }
+  },
   "config": {
     "background": "transparent",
     "font": "IBM Plex Sans",
-    "view": {"stroke": null},
-    "facet": {"spacing": 30},
-    "text": {"font": "IBM Plex Sans"}
+    "view": {
+      "stroke": null
+    },
+    "facet": {
+      "spacing": 30
+    },
+    "text": {
+      "font": "IBM Plex Sans"
+    }
   }
 }
