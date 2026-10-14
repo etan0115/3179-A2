@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Scatter plot: walking vs car share of commuters across Victoria's 66 statistical regions (Census 2021)",
   "width": "container",
-  "height": 638,
+  "height": 733,
   "data": {
     "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
     "format": {
