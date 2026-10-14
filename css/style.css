@@ -5,7 +5,7 @@
   --surface-strong: #eee8da;
   --ink: #173c35;
   --ink-soft: #355b52;
-  --muted: #5b6b64;   
+  --muted: #5b6b64;  
   --teal: #0f5c5e;
   --teal-dark: #0b4547;
   --gold: #ad8a4e;
@@ -67,9 +67,9 @@ a:focus-visible {
   width: min(var(--max), calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
-  gap: clamp(50px, 8vw, 130px);
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 540px);
+  gap: clamp(40px, 6vw, 90px);
+  align-items: center;
 }
 
 .hero-copy { max-width: 900px; }
@@ -132,11 +132,36 @@ h1 {
   font-size: 1rem;
 }
 
+.hero-visual {
+  position: relative;
+  margin: 0 0 28px 20px;
+}
+.hero-visual img {
+  display: block;
+  width: 100%;
+  height: clamp(380px, 40vw, 520px);
+  object-fit: cover;
+  object-position: 100% 50%;
+  border-radius: 14px;
+}
 .hero-stat {
-  align-self: center;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  padding: 22px 0 25px;
+  position: absolute;
+  left: -20px;
+  bottom: -28px;
+  width: min(280px, 72%);
+  padding: 26px 28px 26px;
+  background: var(--ink);
+  color: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px rgba(16,47,42,.28);
+}
+.hero-stat::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  margin-bottom: 14px;
+  background: var(--gold);
 }
 .hero-stat-label {
   display: block;
@@ -148,21 +173,21 @@ h1 {
 }
 .hero-stat strong {
   display: block;
-  font-size: clamp(5rem, 9vw, 8rem);
-  line-height: .85;
-  color: var(--teal);
+  font-size: clamp(4rem, 6vw, 5.6rem);
+  line-height: .9;
+  color: var(--white);
 }
 .hero-stat span:not(.hero-stat-label) {
   display: block;
   max-width: 230px;
-  margin-top: 14px;
+  margin-top: 10px;
   font-size: 1rem;
   font-weight: 500;
 }
 .hero-stat small {
   display: block;
-  margin-top: 10px;
-  color: var(--muted);
+  margin-top: 8px;
+  color: #c7d6d1;
   font-size: .76rem;
   line-height: 1.45;
 }
@@ -501,8 +526,9 @@ footer {
 @media (max-width: 900px) {
   .hero { min-height: auto; padding: 100px 0 100px; }
   .hero-inner { grid-template-columns: 1fr; gap: 55px; }
-  .hero-stat { max-width: 330px; }
-  .hero-stat strong { font-size: 5.5rem; }
+  .hero-visual { max-width: 560px; margin: 0; }
+  .hero-visual img { height: 360px; }
+  .hero-stat { position: relative; right: auto; top: auto; width: min(300px, 86%); margin: -56px 0 0 16px; }
   .progress-dots { display: none; }
   .section-nav-label { display: none; }
   .takeaway-stats { margin-left: 0; }
