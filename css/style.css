@@ -5,7 +5,7 @@
   --surface-strong: #eee8da;
   --ink: #173c35;
   --ink-soft: #355b52;
-  --muted: #5b6b64;  
+  --muted: #5b6b64;   /* 5:1 contrast on the cream background */
   --teal: #0f5c5e;
   --teal-dark: #0b4547;
   --gold: #ad8a4e;
@@ -334,7 +334,7 @@ h2 {
 .lede strong { color: var(--ink); font-weight: 600; }
 .takeaway .lede strong { color: var(--white); }
 .lede {
-  max-width: 62ch;
+  max-width: 42ch;   /* about 10 words per line */
   margin: 0 0 48px;
   color: var(--ink-soft);
   font-size: clamp(1.02rem, 1.35vw, 1.18rem);
@@ -367,6 +367,7 @@ h2 {
   border-top: 3px solid var(--teal);
 }
 .chart-card.chart-wide { margin-top: 54px; }
+.chart-card.chart-first { margin-top: 0; }
 
 .pill {
   display: inline-block;
@@ -378,7 +379,7 @@ h2 {
 .card-insight {
   min-height: calc(2 * 1.35em);   /* headlines in a row take the same space */
   margin: 0 0 20px;
-  max-width: 660px;
+  max-width: 34ch;   /* about 10 words per line */
   font-size: clamp(1.08rem, 1.45vw, 1.34rem);
   line-height: 1.35;
   font-weight: 600;
@@ -404,12 +405,13 @@ h2 {
 .card-caption strong { color: var(--ink); font-weight: 600; }
 .card-caption {
   margin: 13px 0 0;
-  max-width: 68ch;
+  max-width: 42ch;   /* about 10 words per line */
   color: var(--ink-soft);
   font-size: .9rem;
   line-height: 1.55;
 }
 .card-source {
+  max-width: 62ch;
   margin: 7px 0 0;
   color: var(--muted);
   font-size: .78rem;
@@ -460,7 +462,7 @@ h2 {
   color: #f2d98e;
 }
 .stat p {
-  max-width: 270px;
+  max-width: 28ch;
   margin: 20px 0 0;
   color: #c7d6d1;
   font-size: .9rem;
@@ -497,7 +499,7 @@ footer {
 }
 .sources a:hover { color: #fff; }
 .ai-note {
-  max-width: 68ch;
+  max-width: 62ch;
   margin-top: 28px !important;
   color: #b3c4be;
   font-size: .78rem !important;
@@ -508,6 +510,7 @@ footer {
   padding: 0;
 }
 .sources li {
+  max-width: 48ch;
   font-size: .78rem;
   line-height: 1.55;
   margin-bottom: 8px;
