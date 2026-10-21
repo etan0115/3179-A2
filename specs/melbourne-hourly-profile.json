@@ -1,0 +1,524 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Line chart with filled areas: average pedestrians per sensor for each hour of the day, weekdays vs weekends, City of Melbourne 2025",
+  "width": "container",
+  "height": 400,
+  "data": {
+    "url": "data/melbourne_weekday_hour_2025.csv",
+    "format": {
+      "type": "csv",
+      "parse": {
+        "hour": "number",
+        "total_count": "number",
+        "sensor_hours": "number"
+      }
+    }
+  },
+  "transform": [
+    {
+      "calculate": "indexof(['Saturday','Sunday'], datum.weekday) >= 0 ? 'Weekends' : 'Weekdays'",
+      "as": "day_type"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "sum",
+          "field": "total_count",
+          "as": "total"
+        },
+        {
+          "op": "sum",
+          "field": "sensor_hours",
+          "as": "hours"
+        }
+      ],
+      "groupby": [
+        "day_type",
+        "hour"
+      ]
+    },
+    {
+      "calculate": "datum.total / datum.hours",
+      "as": "avg_per_sensor"
+    },
+    {
+      "calculate": "datum.hour == 0 ? '12am' : datum.hour < 12 ? datum.hour + 'am' : datum.hour == 12 ? '12pm' : (datum.hour - 12) + 'pm'",
+      "as": "hour_label"
+    },
+    {
+      "calculate": "(datum.day_type == 'Weekdays' && (datum.hour == 12 || datum.hour == 17)) || (datum.day_type == 'Weekends' && datum.hour == 14) ? 'Peak hour' : 'Other hours'",
+      "as": "hour_type"
+    }
+  ],
+  "config": {
+    "background": "transparent",
+    "font": "IBM Plex Sans",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11
+    },
+    "text": {
+      "font": "IBM Plex Sans",
+      "color": "#1f2e22"
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "area",
+        "opacity": 0.14,
+        "interpolate": "monotone"
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          },
+          "stack": null
+        },
+        "color": {
+          "field": "day_type",
+          "type": "nominal",
+          "title": null,
+          "scale": {
+            "domain": [
+              "Weekdays",
+              "Weekends"
+            ],
+            "range": [
+              "#0f5c5e",
+              "#be6e33"
+            ]
+          },
+          "legend": {
+            "orient": "top",
+            "direction": "horizontal",
+            "symbolType": "stroke",
+            "symbolStrokeWidth": 4,
+            "labelFontSize": 12
+          }
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "line",
+        "strokeWidth": 3,
+        "interpolate": "monotone"
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        "color": {
+          "field": "day_type",
+          "type": "nominal",
+          "title": null,
+          "scale": {
+            "domain": [
+              "Weekdays",
+              "Weekends"
+            ],
+            "range": [
+              "#0f5c5e",
+              "#be6e33"
+            ]
+          },
+          "legend": {
+            "orient": "top",
+            "direction": "horizontal",
+            "symbolType": "stroke",
+            "symbolStrokeWidth": 4,
+            "labelFontSize": 12
+          }
+        },
+        "tooltip": [
+          {
+            "field": "day_type",
+            "title": "Type of day"
+          },
+          {
+            "field": "hour_label",
+            "title": "Hour starting"
+          },
+          {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "format": ",.0f",
+            "title": "Average pedestrians per sensor"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "(datum.day_type == 'Weekdays' && (datum.hour == 12 || datum.hour == 17)) || (datum.day_type == 'Weekends' && datum.hour == 14)"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 120,
+        "color": "#ad8a4e",
+        "stroke": "#ffffff",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "day_type",
+            "title": "Type of day"
+          },
+          {
+            "field": "hour_label",
+            "title": "Hour starting"
+          },
+          {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "format": ",.0f",
+            "title": "Average pedestrians per sensor"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.day_type == 'Weekdays' && datum.hour == 17"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": -14,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "center",
+        "baseline": "bottom",
+        "dx": 0,
+        "color": "#1f2e22"
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        "text": {
+          "value": "Evening peak, 5pm"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.day_type == 'Weekdays' && datum.hour == 12"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": -8,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "right",
+        "baseline": "middle",
+        "dx": -12,
+        "color": "#1f2e22"
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        "text": {
+          "value": "Lunchtime peak, 12pm"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.day_type == 'Weekends' && datum.hour == 14"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": -14,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "center",
+        "color": "#8a4f20",
+        "baseline": "bottom",
+        "dx": 0
+      },
+      "encoding": {
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          "scale": {
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          "scale": {
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        "text": {
+          "value": "Weekend peak, 2pm"
+        }
+      }
+    }
+  ]
+}
