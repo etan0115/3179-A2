@@ -1,0 +1,279 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Hex-bin map: City of Melbourne pedestrian sensors grouped into hexagons, coloured by total pedestrians in 2025",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 420,
+  // PARAMS: an interactive control or a selection that other parts of this file can read.
+  "params": [
+    {
+      // NAME: the variable name other parts of this file use to read this control.
+      "name": "hex_km",
+      "value": 0.2,
+      // BIND: makes this parameter a SLIDER.
+      "bind": {"input": "range", "min": 0.15, "max": 0.6, "step": 0.05, "name": "Hexagon size (kilometres): "}
+    }
+  ],
+  // PROJECTION: flattens longitude and latitude onto the screen.
+  "projection": {"type": "mercator", "center": [144.952, -37.81], "scale": 400000},
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {"url": "data/melbourne_city_sa2.topojson", "format": {"type": "topojson", "feature": "sa2"}},
+      // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+      "mark": {"type": "geoshape", "fill": "#efe9da", "stroke": "#ffffff", "strokeWidth": 1.2, "clip": true}
+    },
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {
+        // URL: path to the data file.
+        "url": "data/melbourne_sensor_totals_2025.csv",
+        // FORMAT: how to read the file.
+        "format": {"type": "csv", "parse": {"Location_ID": "number", "total_2025": "number"}}
+      },
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+          "lookup": "Location_ID",
+          // FROM: the second table used for the join.
+          "from": {
+            // SECOND TABLE: the file joined in by the lookup.
+            "data": {"url": "data/melbourne_sensor_locations.csv"},
+            "key": "Location_ID",
+            "fields": ["Sensor_Description", "Latitude", "Longitude"]
+          }
+        },
+        // FILTER: keeps only the rows where this expression is true.
+        {"filter": "isValid(datum.Latitude)"},
+        // CALCULATE: makes the new column "x_km" from this formula.
+        {"calculate": "(toNumber(datum.Longitude) - 144.9603) * 87.85", "as": "x_km"},
+        // CALCULATE: makes the new column "y_km" from this formula.
+        {"calculate": "(toNumber(datum.Latitude) - (-37.813)) * 111.2", "as": "y_km"},
+        // CALCULATE: makes the new column "hex_w" from this formula.
+        {"calculate": "sqrt(3) * hex_km", "as": "hex_w"},
+        // CALCULATE: makes the new column "hex_h" from this formula.
+        {"calculate": "1.5 * hex_km", "as": "hex_h"},
+        // CALCULATE: makes the new column "row_a" from this formula.
+        {"calculate": "floor(datum.y_km / datum.hex_h)", "as": "row_a"},
+        // CALCULATE: makes the new column "row_b" from this formula.
+        {"calculate": "datum.row_a + 1", "as": "row_b"},
+        // CALCULATE: makes the new column "shift_a" from this formula.
+        {"calculate": "abs(datum.row_a % 2) == 1 ? datum.hex_w / 2 : 0", "as": "shift_a"},
+        // CALCULATE: makes the new column "shift_b" from this formula.
+        {"calculate": "abs(datum.row_b % 2) == 1 ? datum.hex_w / 2 : 0", "as": "shift_b"},
+        {
+          // CALCULATE: makes the new column "cx_a" from this formula.
+          "calculate": "round((datum.x_km - datum.shift_a) / datum.hex_w) * datum.hex_w + datum.shift_a",
+          "as": "cx_a"
+        },
+        {
+          // CALCULATE: makes the new column "cx_b" from this formula.
+          "calculate": "round((datum.x_km - datum.shift_b) / datum.hex_w) * datum.hex_w + datum.shift_b",
+          "as": "cx_b"
+        },
+        {
+          // CALCULATE: makes the new column "dist_a" from this formula.
+          "calculate": "pow(datum.x_km - datum.cx_a, 2) + pow(datum.y_km - datum.row_a * datum.hex_h, 2)",
+          "as": "dist_a"
+        },
+        {
+          // CALCULATE: makes the new column "dist_b" from this formula.
+          "calculate": "pow(datum.x_km - datum.cx_b, 2) + pow(datum.y_km - datum.row_b * datum.hex_h, 2)",
+          "as": "dist_b"
+        },
+        // CALCULATE: makes the new column "hex_x" from this formula.
+        {"calculate": "datum.dist_a <= datum.dist_b ? datum.cx_a : datum.cx_b", "as": "hex_x"},
+        {
+          // CALCULATE: makes the new column "hex_y" from this formula.
+          "calculate": "datum.dist_a <= datum.dist_b ? datum.row_a * datum.hex_h : datum.row_b * datum.hex_h",
+          "as": "hex_y"
+        },
+        {
+          // AGGREGATE: collapses rows into one row per group (sum, count, min, max...).
+          "aggregate": [{"op": "sum", "field": "total_2025", "as": "pedestrians"}, {"op": "count", "as": "sensors"}],
+          "groupby": ["hex_x", "hex_y"]
+        },
+        // CALCULATE: makes the new column "avg_per_sensor" from this formula.
+        {"calculate": "datum.pedestrians / datum.sensors", "as": "avg_per_sensor"},
+        // CALCULATE: makes the new column "hex_lon" from this formula.
+        {"calculate": "144.9603 + datum.hex_x / 87.85", "as": "hex_lon"},
+        // CALCULATE: makes the new column "hex_lat" from this formula.
+        {"calculate": "-37.813 + datum.hex_y / 111.2", "as": "hex_lat"},
+        {
+          // CALCULATE: makes the new column "hexagon" from this formula.
+          "calculate": "{'type': 'Polygon', 'coordinates': [[[datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2], [datum.hex_lon + 0 * hex_km / 87.85, datum.hex_lat + -1 * hex_km / 111.2], [datum.hex_lon + -0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2], [datum.hex_lon + -0.866 * hex_km / 87.85, datum.hex_lat + 0.5 * hex_km / 111.2], [datum.hex_lon + 0 * hex_km / 87.85, datum.hex_lat + 1 * hex_km / 111.2], [datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + 0.5 * hex_km / 111.2], [datum.hex_lon + 0.866 * hex_km / 87.85, datum.hex_lat + -0.5 * hex_km / 111.2]]]}",
+          "as": "hexagon"
+        }
+      ],
+      // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+      "layer": [
+        {
+          // PARAMS: an interactive control or a selection that other parts of this file can read.
+          "params": [{"name": "hover", "select": {"type": "point", "on": "pointerover", "clear": "pointerout"}}],
+          // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+          "mark": {"type": "geoshape", "clip": true},
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // SHAPE channel: the symbol or outline drawn. Uses field 'hexagon'.
+            "shape": {"field": "hexagon", "type": "geojson"},
+            // COLOUR channel: hue or shade. Uses field 'avg_per_sensor'.
+            "color": {
+              "field": "avg_per_sensor",
+              "type": "quantitative",
+              "title": "Average pedestrians per sensor, 2025 (logarithmic scale)",
+              // SCALE: logarithmic, so each colour step is about 10 times more.
+              "scale": {"type": "log", "range": ["#eef3e9", "#8fbba5", "#0f5c5e", "#08393a"]},
+              // LEGEND: key explaining the colours or sizes.
+              "legend": {"orient": "top", "direction": "horizontal", "format": "~s", "labelExpr": "datum.value >= 1000000 ? format(datum.value / 1000000, '~') + ' million' : format(datum.value / 1000, '~') + ' thousand'", "gradientLength": 260, "values": [1000000, 10000000]}
+            },
+            // STROKE channel: outline colour. Uses value '#1f2e22'.
+            "stroke": {"condition": {"param": "hover", "empty": false, "value": "#1f2e22"}, "value": "#ffffff"},
+            // STROKE WIDTH channel: outline thickness. Uses value '2.5'.
+            "strokeWidth": {"condition": {"param": "hover", "empty": false, "value": 2.5}, "value": 1},
+            // ORDER channel: drawing order (higher draws on top). Uses value '1'.
+            "order": {"condition": {"param": "hover", "empty": false, "value": 1}, "value": 0},
+            // TOOLTIP: text shown when you hover (details on demand). Uses field 'sensors'.
+            "tooltip": [
+              {"field": "sensors", "title": "Sensors in this hexagon"},
+              {"field": "avg_per_sensor", "type": "quantitative", "format": ",.0f", "title": "Average pedestrians per sensor in 2025"},
+              {"field": "pedestrians", "type": "quantitative", "format": ",", "title": "Total pedestrians counted in 2025"}
+            ]
+          }
+        },
+        {
+          // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+          "transform": [
+            {
+              // WINDOW: calculates across ordered rows (rank, running total).
+              "window": [{"op": "row_number", "as": "rank"}],
+              // SORT: order of the categories.
+              "sort": [{"field": "avg_per_sensor", "order": "descending"}]
+            },
+            // FILTER: keeps only the rows where this expression is true.
+            {"filter": "datum.rank == 1"}
+          ],
+          // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+          "mark": {"type": "geoshape", "fill": null, "strokeWidth": 3.5, "clip": true},
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // SHAPE channel: the symbol or outline drawn. Uses field 'hexagon'.
+            "shape": {"field": "hexagon", "type": "geojson"},
+            // STROKE channel: outline colour. Uses datum 'Busiest hexagon'.
+            "stroke": {
+              "datum": "Busiest hexagon",
+              "type": "nominal",
+              // SCALE: how data values map to the channel.
+              "scale": {"range": ["#ad8a4e"]},
+              // LEGEND: key explaining the colours or sizes.
+              "legend": {
+                "title": null,
+                "orient": "bottom",
+                "symbolType": "M0,-1 L0.866,-0.5 L0.866,0.5 L0,1 L-0.866,0.5 L-0.866,-0.5 Z",
+                "symbolSize": 220,
+                "labelFontSize": 12,
+                "encode": {"symbols": {"update": {"fill": {"value": "transparent"}, "strokeWidth": {"value": 3.5}}}},
+                "direction": "horizontal"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {
+        // URL: path to the data file.
+        "url": "data/melbourne_sensor_totals_2025.csv",
+        // FORMAT: how to read the file.
+        "format": {"type": "csv", "parse": {"Location_ID": "number"}}
+      },
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+          "lookup": "Location_ID",
+          // FROM: the second table used for the join.
+          "from": {
+            // SECOND TABLE: the file joined in by the lookup.
+            "data": {"url": "data/melbourne_sensor_locations.csv"},
+            "key": "Location_ID",
+            "fields": ["Latitude", "Longitude"]
+          }
+        },
+        // FILTER: keeps only the rows where this expression is true.
+        {"filter": "isValid(datum.Latitude)"}
+      ],
+      // MARK (this layer): POINT: a dot or symbol.
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 14,
+        "color": "#ffffff",
+        "stroke": "#1f2e22",
+        "strokeWidth": 0.6,
+        "opacity": 0.9,
+        "clip": true
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // LONGITUDE channel: map position, east to west. Uses field 'Longitude'.
+        "longitude": {"field": "Longitude", "type": "quantitative"},
+        // LATITUDE channel: map position, north to south. Uses field 'Latitude'.
+        "latitude": {"field": "Latitude", "type": "quantitative"},
+        // SHAPE channel: the symbol or outline drawn. Uses datum 'Pedestrian sensor'.
+        "shape": {
+          "datum": "Pedestrian sensor",
+          "type": "nominal",
+          // SCALE: how data values map to the channel.
+          "scale": {"range": ["circle"]},
+          // LEGEND: key explaining the colours or sizes.
+          "legend": {
+            "title": null,
+            "orient": "bottom",
+            "symbolSize": 40,
+            "labelFontSize": 12,
+            "encode": {
+              "symbols": {
+                "update": {
+                  "fill": {"value": "#ffffff"},
+                  "stroke": {"value": "#1f2e22"},
+                  "strokeWidth": {"value": 1},
+                  "opacity": {"value": 1}
+                }
+              }
+            },
+            "direction": "horizontal",
+            "labelLimit": 220
+          }
+        }
+      }
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {"stroke": null},
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleLimit": 300
+    },
+    // TEXT style for text marks.
+    "text": {"font": "IBM Plex Sans"},
+    // AXIS style for every axis.
+    "axis": {"labelFontSize": 12}
+  }
+}

@@ -1,0 +1,167 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Scatter plot: walking vs car share of commuters across Victoria's 66 statistical regions (Census 2021)",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 733,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "Tot_P": "number",
+        "Worked_home_P": "number",
+        "Did_not_go_to_work_P": "number",
+        "Method_travel_to_work_ns_P": "number",
+        "One_method_Walked_only_P": "number",
+        "One_method_Car_as_driver_P": "number",
+        "One_method_Car_as_passenger_P": "number",
+        "SA3_CODE_2021": "string"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    // CALCULATE: makes the new column "sa3_code" from this formula.
+    {"calculate": "toString(datum.SA3_CODE_2021)", "as": "sa3_code"},
+    // FILTER: keeps only the rows where this expression is true.
+    {"filter": "substring(datum.sa3_code, 0, 2) != '29'"},
+    // CALCULATE: makes the new column "sa4" from this formula.
+    {"calculate": "substring(datum.sa3_code, 0, 3)", "as": "sa4"},
+    {
+      // CALCULATE: makes the new column "region_group" from this formula.
+      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle and outer Melbourne' : 'Regional Victoria'",
+      "as": "region_group"
+    },
+    {
+      // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+      "lookup": "sa3_code",
+      // FROM: the second table used for the join.
+      "from": {
+        // SECOND TABLE: the file joined in by the lookup.
+        "data": {"url": "data/victoria_sa3_2021.topojson", "format": {"type": "topojson", "feature": "sa3"}},
+        "key": "properties.SA3_CODE_2021"
+      },
+      "as": "geo"
+    },
+    // CALCULATE: makes the new column "sa3_name" from this formula.
+    {"calculate": "datum.geo.properties.SA3_NAME_2021", "as": "sa3_name"},
+    // CALCULATE: makes the new column "walked_pct" from this formula.
+    {"calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100", "as": "walked_pct"},
+    {
+      // CALCULATE: makes the new column "commuters" from this formula.
+      "calculate": "datum.Tot_P - datum.Worked_home_P - datum.Did_not_go_to_work_P - datum.Method_travel_to_work_ns_P",
+      "as": "commuters"
+    },
+    // CALCULATE: makes the new column "walk_share" from this formula.
+    {"calculate": "datum.One_method_Walked_only_P / datum.commuters * 100", "as": "walk_share"},
+    {
+      // CALCULATE: makes the new column "car_share" from this formula.
+      "calculate": "(datum.One_method_Car_as_driver_P + datum.One_method_Car_as_passenger_P) / datum.commuters * 100",
+      "as": "car_share"
+    }
+  ],
+  // ENCODING: links data fields to visual channels (position, colour, size...) for ALL layers below.
+  "encoding": {
+    // X channel: horizontal POSITION. Uses field 'car_share'.
+    "x": {
+      "field": "car_share",
+      "type": "quantitative",
+      "title": "Travelled to work by car (%)",
+      // SCALE: how data values map to the channel.
+      "scale": {"domain": [30, 95]}
+    },
+    // Y channel: vertical POSITION. Uses field 'walk_share'.
+    "y": {"field": "walk_share", "type": "quantitative", "title": "Walked to work (%)"}
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [{"regression": "walk_share", "on": "car_share"}],
+      // MARK (this layer): LINE: joins points in order.
+      "mark": {"type": "line", "color": "#9a9588", "strokeDash": [5, 4], "strokeWidth": 1.5}
+    },
+    {
+      // PARAMS: an interactive control or a selection that other parts of this file can read.
+      "params": [{"name": "region_pick", "select": {"type": "point", "fields": ["region_group"]}, "bind": "legend"}],
+      // MARK (this layer): CIRCLE: a filled dot.
+      "mark": {"type": "circle", "size": 70, "stroke": "#ffffff", "strokeWidth": 0.8},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // COLOUR channel: hue or shade. Uses field 'region_group'.
+        "color": {
+          "field": "region_group",
+          "type": "nominal",
+          "title": "Region type",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": ["Inner Melbourne", "Middle and outer Melbourne", "Regional Victoria"],
+            // RANGE: the colours or sizes it maps to.
+            "range": ["#7b5c8f", "#5f6b73", "#b5566b"]
+          },
+          // LEGEND: key explaining the colours or sizes.
+          "legend": {"orient": "top", "title": null, "direction": "horizontal"}
+        },
+        // OPACITY channel: how see-through the mark is. Uses value '0.9'.
+        "opacity": {"condition": {"param": "region_pick", "value": 0.9}, "value": 0.12},
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'sa3_name'.
+        "tooltip": [
+          {"field": "sa3_name", "title": "Region"},
+          {"field": "region_group", "title": "Region type"},
+          {"field": "walk_share", "type": "quantitative", "format": ".1f", "title": "Percentage who walked to work"},
+          {"field": "car_share", "type": "quantitative", "format": ".1f", "title": "Percentage who travelled to work by car"},
+          {"field": "commuters", "type": "quantitative", "format": ",", "title": "People who travelled to work"}
+        ]
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [{"filter": "datum.sa3_name == 'Melbourne City'"}],
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {"type": "text", "align": "left", "dx": 10, "fontSize": 11, "fontWeight": 500, "color": "#1f2e22"},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {"text": {"value": "← Melbourne City: 1 in 4 commuters walk"}}
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {"stroke": null},
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // TEXT style for text marks.
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}

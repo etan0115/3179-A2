@@ -1,0 +1,118 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Pictogram: 100 adults, coloured by whether they walk for recreation",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 304,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/ausplay_participation_2025.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "rate_Total": "number",
+        "rate_Male": "number",
+        "rate_Female": "number",
+        "rate_15-17": "number",
+        "rate_18-24": "number",
+        "rate_25-34": "number",
+        "rate_35-44": "number",
+        "rate_45-54": "number",
+        "rate_55-64": "number",
+        "rate_65+": "number",
+        "participants_Total": "number",
+        "participants_Male": "number",
+        "participants_Female": "number",
+        "participants_15-17": "number",
+        "participants_18-24": "number",
+        "participants_25-34": "number",
+        "participants_35-44": "number",
+        "participants_45-54": "number",
+        "participants_55-64": "number",
+        "participants_65+": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    // FILTER: keeps only the rows where this expression is true.
+    {"filter": "datum.activity == 'Walking (Recreational)'"},
+    // CALCULATE: makes the new column "walkers_per_100" from this formula.
+    {"calculate": "round(datum.rate_Total * 100)", "as": "walkers_per_100"},
+    // CALCULATE: makes the new column "person" from this formula.
+    {"calculate": "sequence(0, 100)", "as": "person"},
+    // FLATTEN: turns a list in one row into one row per item.
+    {"flatten": ["person"]},
+    // CALCULATE: makes the new column "col" from this formula.
+    {"calculate": "datum.person % 20", "as": "col"},
+    // CALCULATE: makes the new column "row" from this formula.
+    {"calculate": "floor(datum.person / 20)", "as": "row"},
+    // CALCULATE: makes the new column "status" from this formula.
+    {"calculate": "datum.person < datum.walkers_per_100 ? 'Walks for recreation' : 'Does not'", "as": "status"}
+  ],
+  // MARK (whole chart): POINT: a dot or symbol.
+  "mark": {
+    "type": "point",
+    "filled": true,
+    "shape": "M0,-1.6 A0.45,0.45 0 1,1 0,-0.7 A0.45,0.45 0 1,1 0,-1.6 Z M-0.55,-0.55 L0.55,-0.55 L0.55,0.35 L0.3,0.35 L0.3,1.6 L-0.3,1.6 L-0.3,0.35 L-0.55,0.35 Z",
+    "size": 150,
+    "opacity": 1
+  },
+  // ENCODING: links data fields to visual channels (position, colour, size...) for ALL layers below.
+  "encoding": {
+    // X channel: horizontal POSITION. Uses field 'col'.
+    "x": {"field": "col", "type": "ordinal", "axis": null},
+    // Y channel: vertical POSITION. Uses field 'row'.
+    "y": {"field": "row", "type": "ordinal", "axis": null},
+    // COLOUR channel: hue or shade. Uses field 'status'.
+    "color": {
+      "field": "status",
+      "type": "nominal",
+      "title": null,
+      // SCALE: how data values map to the channel.
+      "scale": {"domain": ["Walks for recreation", "Does not"], "range": ["#0f5c5e", "#d5d9db"]},
+      // LEGEND: key explaining the colours or sizes.
+      "legend": {"orient": "top", "direction": "horizontal", "title": null}
+    },
+    // TOOLTIP: text shown when you hover (details on demand). Uses field 'walkers_per_100'.
+    "tooltip": [{"field": "walkers_per_100", "type": "quantitative", "title": "Walkers per 100 adults"}]
+  },
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {"stroke": null},
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // TEXT style for text marks.
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}

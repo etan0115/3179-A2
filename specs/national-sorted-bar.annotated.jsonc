@@ -1,0 +1,459 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Box plot: share of employed people who walked to work across Victoria's 66 statistical regions, by region type (Census 2021)",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 384,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "SA3_CODE_2021": "string",
+        "Tot_P": "number",
+        "One_method_Walked_only_P": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    {
+      // CALCULATE: makes the new column "sa3_code" from this formula.
+      "calculate": "toString(datum.SA3_CODE_2021)",
+      "as": "sa3_code"
+    },
+    {
+      // FILTER: keeps only the rows where this expression is true.
+      "filter": "substring(datum.sa3_code, 0, 2) != '29'"
+    },
+    {
+      // CALCULATE: makes the new column "sa4" from this formula.
+      "calculate": "substring(datum.sa3_code, 0, 3)",
+      "as": "sa4"
+    },
+    {
+      // CALCULATE: makes the new column "region_group" from this formula.
+      "calculate": "indexof(['206','207','208'], datum.sa4) >= 0 ? 'Inner Melbourne' : indexof(['209','210','211','212','213','214'], datum.sa4) >= 0 ? 'Middle and outer Melbourne' : 'Regional Victoria'",
+      "as": "region_group"
+    },
+    {
+      // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+      "lookup": "sa3_code",
+      // FROM: the second table used for the join.
+      "from": {
+        // SECOND TABLE: the file joined in by the lookup.
+        "data": {
+          // URL: path to the data file.
+          "url": "data/victoria_sa3_2021.topojson",
+          // FORMAT: how to read the file.
+          "format": {
+            "type": "topojson",
+            "feature": "sa3"
+          }
+        },
+        "key": "properties.SA3_CODE_2021"
+      },
+      "as": "geo"
+    },
+    {
+      // CALCULATE: makes the new column "sa3_name" from this formula.
+      "calculate": "datum.geo.properties.SA3_NAME_2021",
+      "as": "sa3_name"
+    },
+    {
+      // CALCULATE: makes the new column "walked_pct" from this formula.
+      "calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100",
+      "as": "walked_pct"
+    },
+    {
+      // CALCULATE: makes the new column "jitter" from this formula.
+      "calculate": "(toNumber(datum.sa3_code) % 13) / 13 - 0.5",
+      "as": "jitter"
+    }
+  ],
+  // ENCODING: links data fields to visual channels (position, colour, size...) for ALL layers below.
+  "encoding": {
+    // Y channel: vertical POSITION. Uses field 'region_group'.
+    "y": {
+      "field": "region_group",
+      "type": "nominal",
+      "title": null,
+      // SORT: order of the categories.
+      "sort": [
+        "Inner Melbourne",
+        "Middle and outer Melbourne",
+        "Regional Victoria"
+      ],
+      // AXIS: tick labels, format and title for this channel.
+      "axis": {
+        "labelFontSize": 12,
+        "labelLimit": 240
+      },
+      // SCALE: how data values map to the channel.
+      "scale": {
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    },
+    // X channel: horizontal POSITION. Uses field 'walked_pct'.
+    "x": {
+      "field": "walked_pct",
+      "type": "quantitative",
+      "title": "Walked to work (%)",
+      // SCALE: how data values map to the channel.
+      "scale": {
+        // DOMAIN: the data range (or class breaks) on this scale.
+        "domain": [
+          0,
+          13
+        ]
+      },
+      // AXIS: tick labels, format and title for this channel.
+      "axis": {
+        "tickMinStep": 1
+      }
+    }
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      "description": "Box plot built from explicit quartile calculations: box = middle 50% of regions, dark tick = median, whiskers = most extreme regions within 1.5 times the box width",
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // JOINAGGREGATE: adds a group summary (e.g. total, quartile) to EVERY row without collapsing rows.
+          "joinaggregate": [
+            {
+              "op": "q1",
+              "field": "walked_pct",
+              "as": "q1"
+            },
+            {
+              "op": "median",
+              "field": "walked_pct",
+              "as": "median"
+            },
+            {
+              "op": "q3",
+              "field": "walked_pct",
+              "as": "q3"
+            },
+            {
+              "op": "count",
+              "as": "regions"
+            }
+          ],
+          "groupby": [
+            "region_group"
+          ]
+        },
+        {
+          // CALCULATE: makes the new column "iqr" from this formula.
+          "calculate": "datum.q3 - datum.q1",
+          "as": "iqr"
+        },
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "datum.walked_pct >= datum.q1 - 1.5 * datum.iqr && datum.walked_pct <= datum.q3 + 1.5 * datum.iqr"
+        },
+        {
+          // AGGREGATE: collapses rows into one row per group (sum, count, min, max...).
+          "aggregate": [
+            {
+              "op": "min",
+              "field": "walked_pct",
+              "as": "lower_whisker"
+            },
+            {
+              "op": "max",
+              "field": "walked_pct",
+              "as": "upper_whisker"
+            },
+            {
+              "op": "max",
+              "field": "q1",
+              "as": "q1"
+            },
+            {
+              "op": "max",
+              "field": "median",
+              "as": "median"
+            },
+            {
+              "op": "max",
+              "field": "q3",
+              "as": "q3"
+            },
+            {
+              "op": "max",
+              "field": "regions",
+              "as": "regions"
+            }
+          ],
+          "groupby": [
+            "region_group"
+          ]
+        }
+      ],
+      // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+      "layer": [
+        {
+          // MARK (this layer): RULE: a straight line (stem, whisker, leader, trend).
+          "mark": {
+            "type": "rule",
+            "color": "#8b8f83"
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // X channel: horizontal POSITION. Uses field 'lower_whisker'.
+            "x": {
+              "field": "lower_whisker",
+              "type": "quantitative",
+              "title": "Walked to work (%)",
+              // AXIS: tick labels, format and title for this channel.
+              "axis": {
+                "tickMinStep": 1
+              }
+            },
+            // X2 channel: where the mark ENDS on x (gives a bar/rule a start and end). Uses field 'upper_whisker'.
+            "x2": {
+              "field": "upper_whisker"
+            }
+          }
+        },
+        {
+          // MARK (this layer): BAR: a rectangle from a baseline.
+          "mark": {
+            "type": "bar",
+            "size": 38,
+            "opacity": 0.35
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // X channel: horizontal POSITION. Uses field 'q1'.
+            "x": {
+              "field": "q1",
+              "type": "quantitative"
+            },
+            // X2 channel: where the mark ENDS on x (gives a bar/rule a start and end). Uses field 'q3'.
+            "x2": {
+              "field": "q3"
+            },
+            // COLOUR channel: hue or shade. Uses field 'region_group'.
+            "color": {
+              "field": "region_group",
+              "type": "nominal",
+              // LEGEND: key explaining the colours or sizes.
+              "legend": null,
+              // SCALE: how data values map to the channel.
+              "scale": {
+                // DOMAIN: the data range (or class breaks) on this scale.
+                "domain": [
+                  "Inner Melbourne",
+                  "Middle and outer Melbourne",
+                  "Regional Victoria"
+                ],
+                // RANGE: the colours or sizes it maps to.
+                "range": [
+                  "#7b5c8f",
+                  "#5f6b73",
+                  "#b5566b"
+                ]
+              }
+            },
+            // TOOLTIP: text shown when you hover (details on demand). Uses field 'region_group'.
+            "tooltip": [
+              {
+                "field": "region_group",
+                "title": "Region type"
+              },
+              {
+                "field": "regions",
+                "title": "Number of regions"
+              },
+              {
+                "field": "upper_whisker",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Highest percentage who walked to work (end of right whisker)"
+              },
+              {
+                "field": "q3",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Upper quartile (right edge of box)"
+              },
+              {
+                "field": "median",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Median (middle region)"
+              },
+              {
+                "field": "q1",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Lower quartile (left edge of box)"
+              },
+              {
+                "field": "lower_whisker",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Lowest percentage who walked to work (end of left whisker)"
+              }
+            ]
+          }
+        },
+        {
+          // MARK (this layer): TICK: a short line segment (used for the median).
+          "mark": {
+            "type": "tick",
+            "size": 38,
+            "thickness": 2,
+            "color": "#1f2e22"
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // X channel: horizontal POSITION. Uses field 'median'.
+            "x": {
+              "field": "median",
+              "type": "quantitative"
+            }
+          }
+        }
+      ]
+    },
+    {
+      // MARK (this layer): CIRCLE: a filled dot.
+      "mark": {
+        "type": "circle",
+        "size": 40,
+        "opacity": 0.85,
+        "stroke": "#ffffff",
+        "strokeWidth": 0.8
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // Y OFFSET channel: small vertical shift (used here for jitter). Uses field 'jitter'.
+        "yOffset": {
+          "field": "jitter",
+          "type": "quantitative",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              -0.5,
+              0.5
+            ],
+            // RANGE: the colours or sizes it maps to.
+            "range": [
+              34,
+              66
+            ]
+          }
+        },
+        // COLOUR channel: hue or shade. Uses field 'region_group'.
+        "color": {
+          "field": "region_group",
+          "type": "nominal",
+          // LEGEND: key explaining the colours or sizes.
+          "legend": null
+        },
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'sa3_name'.
+        "tooltip": [
+          {
+            "field": "sa3_name",
+            "title": "Region"
+          },
+          {
+            "field": "region_group",
+            "title": "Region type"
+          },
+          {
+            "field": "walked_pct",
+            "type": "quantitative",
+            "format": ".1f",
+            "title": "Percentage of workers who walked to work"
+          }
+        ]
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "datum.sa3_name == 'Melbourne City'"
+        }
+      ],
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {
+        "type": "text",
+        "align": "right",
+        "dx": -10,
+        "dy": -12,
+        "fontSize": 11,
+        "fontWeight": 600,
+        "color": "#1f2e22"
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // TEXT channel: the words drawn. Uses value 'Melbourne City 12.1%'.
+        "text": {
+          "value": "Melbourne City 12.1%"
+        },
+        // Y OFFSET channel: small vertical shift (used here for jitter). Uses field 'jitter'.
+        "yOffset": {
+          "field": "jitter",
+          "type": "quantitative",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              -0.5,
+              0.5
+            ],
+            // RANGE: the colours or sizes it maps to.
+            "range": [
+              34,
+              66
+            ]
+          }
+        }
+      }
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {
+      "stroke": null
+    },
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3"
+    },
+    // TEXT style for text marks.
+    "text": {
+      "font": "IBM Plex Sans"
+    },
+    "axisX": {
+      "tickCount": 13
+    }
+  }
+}

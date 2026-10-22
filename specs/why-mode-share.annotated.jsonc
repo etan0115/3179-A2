@@ -1,0 +1,394 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Waffle charts: how employed people travelled to work on Census day 2021, by state. Each square is 1% of workers.",
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/census2021_travel_to_work_by_state.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "New South Wales": "number",
+        "Victoria": "number",
+        "Queensland": "number",
+        "South Australia": "number",
+        "Western Australia": "number",
+        "Tasmania": "number",
+        "Northern Territory": "number",
+        "Australian Capital Territory": "number",
+        "Australia": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    {
+      // FILTER: keeps only the rows where this expression is true.
+      "filter": "datum.Mode != 'Total'"
+    },
+    {
+      // FOLD: turns several columns into rows (wide to long).
+      "fold": [
+        "Australia",
+        "New South Wales",
+        "Victoria",
+        "Queensland",
+        "South Australia",
+        "Western Australia",
+        "Tasmania",
+        "Northern Territory",
+        "Australian Capital Territory"
+      ],
+      "as": [
+        "state",
+        "people"
+      ]
+    },
+    {
+      // CALCULATE: makes the new column "mode_group" from this formula.
+      "calculate": "datum.Mode == 'Walked only' ? 'Walked' : datum.Mode == 'Bicycle' ? 'Cycled' : indexof(['Train','Bus','Ferry','Tram/light rail'], datum.Mode) >= 0 ? 'Public transport' : indexof(['Car, as driver','Car, as passenger','Taxi/ride-share service'], datum.Mode) >= 0 ? 'Car' : datum.Mode == 'Worked at home' ? 'Worked at home' : datum.Mode == 'Did not go to work' ? 'Did not go to work' : 'Other or not stated'",
+      "as": "mode_group"
+    },
+    {
+      // CALCULATE: makes the new column "mode_order" from this formula.
+      "calculate": "indexof(['Walked','Cycled','Public transport','Car','Other or not stated','Worked at home','Did not go to work'], datum.mode_group)",
+      "as": "mode_order"
+    },
+    {
+      // AGGREGATE: collapses rows into one row per group (sum, count, min, max...).
+      "aggregate": [
+        {
+          "op": "sum",
+          "field": "people",
+          "as": "people"
+        }
+      ],
+      "groupby": [
+        "state",
+        "mode_group",
+        "mode_order"
+      ]
+    },
+    {
+      // JOINAGGREGATE: adds a group summary (e.g. total, quartile) to EVERY row without collapsing rows.
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "people",
+          "as": "state_total"
+        }
+      ],
+      "groupby": [
+        "state"
+      ]
+    },
+    {
+      // CALCULATE: makes the new column "share" from this formula.
+      "calculate": "datum.people / datum.state_total",
+      "as": "share"
+    },
+    {
+      // WINDOW: calculates across ordered rows (rank, running total).
+      "window": [
+        {
+          "op": "sum",
+          "field": "share",
+          "as": "cum_end"
+        }
+      ],
+      "groupby": [
+        "state"
+      ],
+      // SORT: order of the categories.
+      "sort": [
+        {
+          "field": "mode_order"
+        }
+      ],
+      "frame": [
+        null,
+        0
+      ]
+    },
+    {
+      // CALCULATE: makes the new column "first_square" from this formula.
+      "calculate": "round((datum.cum_end - datum.share) * 100)",
+      "as": "first_square"
+    },
+    {
+      // CALCULATE: makes the new column "end_square" from this formula.
+      "calculate": "round(datum.cum_end * 100)",
+      "as": "end_square"
+    },
+    {
+      // CALCULATE: makes the new column "square" from this formula.
+      "calculate": "sequence(datum.first_square, datum.end_square)",
+      "as": "square"
+    },
+    {
+      // FLATTEN: turns a list in one row into one row per item.
+      "flatten": [
+        "square"
+      ]
+    },
+    {
+      // FILTER: keeps only the rows where this expression is true.
+      "filter": "isValid(datum.square)"
+    },
+    {
+      // CALCULATE: makes the new column "col" from this formula.
+      "calculate": "datum.square % 10",
+      "as": "col"
+    },
+    {
+      // CALCULATE: makes the new column "row" from this formula.
+      "calculate": "floor(datum.square / 10)",
+      "as": "row"
+    }
+  ],
+  // FACET: repeats one chart design for each group (small multiples).
+  "facet": {
+    "field": "state",
+    "type": "nominal",
+    "title": null,
+    // SORT: order of the categories.
+    "sort": [
+      "Australia",
+      "New South Wales",
+      "Victoria",
+      "Australian Capital Territory",
+      "Queensland",
+      "South Australia",
+      "Western Australia",
+      "Tasmania",
+      "Northern Territory"
+    ],
+    "header": {
+      "labelFontSize": 12,
+      "labelFontWeight": 600,
+      "labelColor": "#1f2e22",
+      "labelPadding": 6,
+      // LABEL EXPRESSION: formula that writes each axis or legend label.
+      "labelExpr": "datum.value == 'Australian Capital Territory' ? ['Australian Capital', 'Territory'] : datum.value",
+      "labelLimit": 160
+    }
+  },
+  // COLUMNS: how many facet panels per row.
+  "columns": 3,
+  // SPEC: the chart design that is repeated for every facet panel.
+  "spec": {
+    "width": 140,
+    "height": 140,
+    // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+    "layer": [
+      {
+        // PARAMS: an interactive control or a selection that other parts of this file can read.
+        "params": [
+          {
+            // NAME: the variable name other parts of this file use to read this control.
+            "name": "mode_pick",
+            // SELECT: what the viewer does to pick items (hover, click).
+            "select": {
+              "type": "point",
+              "fields": [
+                "mode_group"
+              ]
+            },
+            // BIND: links the selection to the legend, so clicking the legend selects items.
+            "bind": "legend"
+          }
+        ],
+        // MARK (this layer): RECT: draws a rectangle for each row (cells, squares, boxes).
+        "mark": {
+          "type": "rect",
+          "cornerRadius": 2
+        },
+        // ENCODING: links data fields to visual channels for THIS layer.
+        "encoding": {
+          // X channel: horizontal POSITION. Uses field 'col'.
+          "x": {
+            "field": "col",
+            "type": "ordinal",
+            // AXIS: tick labels, format and title for this channel.
+            "axis": null,
+            // SCALE: how data values map to the channel.
+            "scale": {
+              "paddingInner": 0.15
+            }
+          },
+          // Y channel: vertical POSITION. Uses field 'row'.
+          "y": {
+            "field": "row",
+            "type": "ordinal",
+            // AXIS: tick labels, format and title for this channel.
+            "axis": null,
+            // SCALE: how data values map to the channel.
+            "scale": {
+              "paddingInner": 0.15
+            }
+          },
+          // COLOUR channel: hue or shade. Uses field 'mode_group'.
+          "color": {
+            "field": "mode_group",
+            "type": "nominal",
+            "title": "How they got to work",
+            // SORT: order of the categories.
+            "sort": [
+              "Walked",
+              "Cycled",
+              "Public transport",
+              "Car",
+              "Other or not stated",
+              "Worked at home",
+              "Did not go to work"
+            ],
+            // SCALE: how data values map to the channel.
+            "scale": {
+              // DOMAIN: the data range (or class breaks) on this scale.
+              "domain": [
+                "Walked",
+                "Cycled",
+                "Public transport",
+                "Car",
+                "Other or not stated",
+                "Worked at home",
+                "Did not go to work"
+              ],
+              // RANGE: the colours or sizes it maps to.
+              "range": [
+                "#0f5c5e",
+                "#8a9a4f",
+                "#4c6e96",
+                "#5f5a52",
+                "#c8c3b6",
+                "#be6e33",
+                "#e3b58c"
+              ]
+            },
+            // LEGEND: key explaining the colours or sizes.
+            "legend": {
+              "orient": "top",
+              "columns": 2,
+              "columnPadding": 14,
+              "symbolType": "square",
+              "labelFontSize": 12,
+              "offset": 12
+            }
+          },
+          // OPACITY channel: how see-through the mark is. Uses value '1'.
+          "opacity": {
+            // CONDITION: if the test (or selection) is true use this value, otherwise the default after it.
+            "condition": {
+              "param": "mode_pick",
+              "value": 1
+            },
+            "value": 0.15
+          },
+          // TOOLTIP: text shown when you hover (details on demand). Uses field 'state'.
+          "tooltip": [
+            {
+              "field": "state",
+              "title": "State or territory"
+            },
+            {
+              "field": "mode_group",
+              "title": "Travel method"
+            },
+            {
+              "field": "share",
+              "type": "quantitative",
+              "format": ".1%",
+              "title": "Share of workers"
+            },
+            {
+              "field": "people",
+              "type": "quantitative",
+              "format": ",",
+              "title": "People"
+            }
+          ]
+        }
+      },
+      {
+        // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+        "transform": [
+          {
+            // FILTER: keeps only the rows where this expression is true.
+            "filter": "datum.mode_group == 'Walked' && datum.square == datum.first_square"
+          },
+          {
+            // CALCULATE: makes the new column "note" from this formula.
+            "calculate": "datum.state == 'Australia' ? [\"Cars carry 57% of workers;\", \"walking only 2.5%\"] : datum.state == 'New South Wales' ? [\"Lockdown: 31% of workers\", \"worked at home\"] : datum.state == 'Victoria' ? [\"Lockdown: 26% of workers\", \"worked at home\"] : datum.state == 'Tasmania' ? [\"Second-highest walking\", \"share: 4.2%\"] : datum.state == 'Northern Territory' ? [\"Highest walking share:\", \"7.6% of workers\"] : datum.state == 'Australian Capital Territory' ? [\"Walking 4.0%, well above\",\"the national 2.5%\"] : datum.state == 'Queensland' ? [\"Cars carry 65%\",\"of workers\"] : datum.state == 'South Australia' ? [\"Cars carry 69%\",\"of workers\"] : datum.state == 'Western Australia' ? [\"Highest public transport\",\"share: 7.4%\"] : null",
+            "as": "note"
+          },
+          {
+            // FILTER: keeps only the rows where this expression is true.
+            "filter": "isValid(datum.note)"
+          }
+        ],
+        // MARK (this layer): TEXT: draws words (labels and annotations).
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "baseline": "top",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#1f2e22",
+          "lineHeight": 14,
+          "dy": 0
+        },
+        // ENCODING: links data fields to visual channels for THIS layer.
+        "encoding": {
+          // X channel: horizontal POSITION. Uses value '0'.
+          "x": {
+            "value": 0
+          },
+          // Y channel: vertical POSITION. Uses value '148'.
+          "y": {
+            "value": 148
+          },
+          // TEXT channel: the words drawn. Uses field 'note'.
+          "text": {
+            "field": "note"
+          }
+        }
+      }
+    ]
+  },
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {
+      "stroke": null
+    },
+    "facet": {
+      "spacing": 20
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "labelLimit": 200,
+      "titleLimit": 250
+    },
+    // TEXT style for text marks.
+    "text": {
+      "font": "IBM Plex Sans"
+    }
+  },
+  // SPACING: gap between facet panels.
+  "spacing": {
+    "row": 18,
+    "column": 20
+  }
+}

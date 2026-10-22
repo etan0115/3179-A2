@@ -1,0 +1,411 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Choropleth map: share of employed people who walked to work, Victorian statistical regions (Census 2021). Geometry from TopoJSON joined to Census CSV with a lookup transform.",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 520,
+  // PARAMS: an interactive control or a selection that other parts of this file can read.
+  "params": [
+    {
+      // NAME: the variable name other parts of this file use to read this control.
+      "name": "view",
+      "value": "All of Victoria",
+      // BIND: makes this parameter a DROPDOWN menu.
+      "bind": {
+        "input": "select",
+        "options": [
+          "All of Victoria",
+          "Greater Melbourne"
+        ],
+        // LABEL shown next to the control.
+        "name": "Zoom to: "
+      }
+    }
+  ],
+  // PROJECTION: flattens longitude and latitude onto the screen.
+  "projection": {
+    "type": "conicEqualArea",
+    "parallels": [
+      -18,
+      -36
+    ],
+    "rotate": [
+      -132,
+      0
+    ],
+    // FIT: zooms the projection so these coordinates fill the chart box.
+    "fit": {
+      "expr": "view == 'Greater Melbourne' ? {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'MultiPoint', 'coordinates': [[144.33, -38.52], [144.33, -37.84], [144.33, -37.16], [145.115, -38.52], [145.115, -37.84], [145.115, -37.16], [145.9, -38.52], [145.9, -37.84], [145.9, -37.16]]}} : {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'MultiPoint', 'coordinates': [[140.95, -39.2], [140.95, -36.585], [140.95, -33.97], [145.47, -39.2], [145.47, -36.585], [145.47, -33.97], [149.99, -39.2], [149.99, -36.585], [149.99, -33.97]]}}"
+    }
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {
+        // SPHERE: the outline of the whole globe, used here as the ocean background.
+        "sphere": true
+      },
+      // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+      "mark": {
+        "type": "geoshape",
+        "fill": "#d6e4e8",
+        "stroke": null,
+        "clip": true
+      }
+    },
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {
+        // GRATICULE: latitude and longitude grid lines.
+        "graticule": {
+          "step": [
+            1,
+            1
+          ]
+        }
+      },
+      // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+      "mark": {
+        "type": "geoshape",
+        "fill": null,
+        "stroke": "#ffffff",
+        "strokeWidth": 0.7,
+        "opacity": 0.8,
+        "clip": true
+      }
+    },
+    {
+      // DATA for THIS layer (a file, or a built-in map background).
+      "data": {
+        // URL: path to the data file.
+        "url": "data/victoria_sa3_2021.topojson",
+        // FORMAT: how to read the file.
+        "format": {
+          "type": "topojson",
+          "feature": "sa3"
+        }
+      },
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+          "lookup": "properties.SA3_CODE_2021",
+          // FROM: the second table used for the join.
+          "from": {
+            // SECOND TABLE: the file joined in by the lookup.
+            "data": {
+              // URL: path to the data file.
+              "url": "data/census2021_G62_travel_to_work_vic_sa3.csv",
+              // FORMAT: how to read the file.
+              "format": {
+                "type": "csv",
+                "parse": {
+                  "SA3_CODE_2021": "string"
+                }
+              }
+            },
+            "key": "SA3_CODE_2021",
+            "fields": [
+              "One_method_Walked_only_P",
+              "Tot_P"
+            ]
+          }
+        },
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "isValid(datum.Tot_P)"
+        },
+        {
+          // CALCULATE: makes the new column "sa3_name" from this formula.
+          "calculate": "datum.properties.SA3_NAME_2021",
+          "as": "sa3_name"
+        },
+        {
+          // CALCULATE: makes the new column "sa3_code" from this formula.
+          "calculate": "datum.properties.SA3_CODE_2021",
+          "as": "sa3_code"
+        },
+        {
+          // CALCULATE: makes the new column "walked_pct" from this formula.
+          "calculate": "datum.One_method_Walked_only_P / datum.Tot_P * 100",
+          "as": "walked_pct"
+        },
+        {
+          // CALCULATE: makes the new column "in_greater_melbourne" from this formula.
+          "calculate": "indexof(['206','207','208','209','210','211','212','213','214'], substring(datum.sa3_code, 0, 3)) >= 0",
+          "as": "in_greater_melbourne"
+        },
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "view == 'All of Victoria' || datum.in_greater_melbourne"
+        }
+      ],
+      // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+      "layer": [
+        {
+          // PARAMS: an interactive control or a selection that other parts of this file can read.
+          "params": [
+            {
+              // NAME: the variable name other parts of this file use to read this control.
+              "name": "hover",
+              // SELECT: what the viewer does to pick items (hover, click).
+              "select": {
+                "type": "point",
+                "on": "pointerover",
+                "clear": "pointerout"
+              }
+            }
+          ],
+          // MARK (this layer): GEOSHAPE: draws map outlines (areas).
+          "mark": {
+            "type": "geoshape",
+            "clip": true
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // COLOUR channel: hue or shade. Uses field 'walked_pct'.
+            "color": {
+              "field": "walked_pct",
+              "type": "quantitative",
+              "title": "Share of employed people who walked to work",
+              // SCALE: threshold scale = fixed class breaks (n breaks give n+1 colour classes).
+              "scale": {
+                "type": "threshold",
+                // DOMAIN: the data range (or class breaks) on this scale.
+                "domain": [
+                  1,
+                  2,
+                  4,
+                  6,
+                  10
+                ],
+                // RANGE: the colours or sizes it maps to.
+                "range": [
+                  "#f1f5ec",
+                  "#d3e3cf",
+                  "#a6c8b1",
+                  "#6fa493",
+                  "#2f7a72",
+                  "#0b4547"
+                ]
+              },
+              // LEGEND: key explaining the colours or sizes.
+              "legend": {
+                "orient": "top",
+                "direction": "horizontal",
+                "titleLimit": 500,
+                "labelOverlap": false,
+                // LABEL EXPRESSION: formula that writes each axis or legend label.
+                "labelExpr": "datum.index == 0 ? '0%' : datum.label + '%'"
+              }
+            },
+            // STROKE channel: outline colour. Uses value '#1f2e22'.
+            "stroke": {
+              // CONDITION: if the test (or selection) is true use this value, otherwise the default after it.
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": "#1f2e22"
+              },
+              "value": "#ffffff"
+            },
+            // STROKE WIDTH channel: outline thickness. Uses value '2.5'.
+            "strokeWidth": {
+              // CONDITION: if the test (or selection) is true use this value, otherwise the default after it.
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": 2.5
+              },
+              "value": 0.6
+            },
+            // ORDER channel: drawing order (higher draws on top). Uses value '1'.
+            "order": {
+              // CONDITION: if the test (or selection) is true use this value, otherwise the default after it.
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": 1
+              },
+              "value": 0
+            },
+            // TOOLTIP: text shown when you hover (details on demand). Uses field 'sa3_name'.
+            "tooltip": [
+              {
+                "field": "sa3_name",
+                "title": "Region"
+              },
+              {
+                "field": "walked_pct",
+                "type": "quantitative",
+                "format": ".1f",
+                "title": "Percentage of workers who walked to work"
+              },
+              {
+                "field": "One_method_Walked_only_P",
+                "type": "quantitative",
+                "format": ",",
+                "title": "People who walked to work"
+              },
+              {
+                "field": "Tot_P",
+                "type": "quantitative",
+                "format": ",",
+                "title": "Employed people"
+              }
+            ]
+          }
+        },
+        {
+          // DATA for THIS layer (a file, or a built-in map background).
+          "data": {
+            "values": [
+              {
+                "view": "All of Victoria",
+                "lon": 144.963,
+                "lat": -37.814,
+                "lon2": 145.55,
+                "lat2": -39.05,
+                "tlon": 145.55,
+                "tlat": -39.25
+              },
+              {
+                "view": "Greater Melbourne",
+                "lon": 144.963,
+                "lat": -37.814,
+                "lon2": 144.86,
+                "lat2": -38.02,
+                "tlon": 144.86,
+                "tlat": -38.06
+              }
+            ]
+          },
+          // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+          "transform": [
+            {
+              // FILTER: keeps only the rows where this expression is true.
+              "filter": "datum.view == view"
+            }
+          ],
+          // MARK (this layer): RULE: a straight line (stem, whisker, leader, trend).
+          "mark": {
+            "type": "rule",
+            "color": "#1f2e22",
+            "strokeWidth": 0.8
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // LONGITUDE channel: map position, east to west. Uses field 'lon'.
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            // LATITUDE channel: map position, north to south. Uses field 'lat'.
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            // LONGITUDE 2: end of a line on the map. Uses field 'lon2'.
+            "longitude2": {
+              "field": "lon2"
+            },
+            // LATITUDE 2: end of a line on the map. Uses field 'lat2'.
+            "latitude2": {
+              "field": "lat2"
+            }
+          }
+        },
+        {
+          // DATA for THIS layer (a file, or a built-in map background).
+          "data": {
+            "values": [
+              {
+                "view": "All of Victoria",
+                "lon": 144.963,
+                "lat": -37.814,
+                "lon2": 145.55,
+                "lat2": -39.05,
+                "tlon": 145.55,
+                "tlat": -39.25
+              },
+              {
+                "view": "Greater Melbourne",
+                "lon": 144.963,
+                "lat": -37.814,
+                "lon2": 144.86,
+                "lat2": -38.02,
+                "tlon": 144.86,
+                "tlat": -38.06
+              }
+            ]
+          },
+          // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+          "transform": [
+            {
+              // FILTER: keeps only the rows where this expression is true.
+              "filter": "datum.view == view"
+            }
+          ],
+          // MARK (this layer): TEXT: draws words (labels and annotations).
+          "mark": {
+            "type": "text",
+            "fontSize": 11,
+            "fontWeight": 600,
+            "color": "#1f2e22",
+            "baseline": "top",
+            "lineHeight": 13
+          },
+          // ENCODING: links data fields to visual channels for THIS layer.
+          "encoding": {
+            // LONGITUDE channel: map position, east to west. Uses field 'tlon'.
+            "longitude": {
+              "field": "tlon",
+              "type": "quantitative"
+            },
+            // LATITUDE channel: map position, north to south. Uses field 'tlat'.
+            "latitude": {
+              "field": "tlat",
+              "type": "quantitative"
+            },
+            // TEXT channel: the words drawn. Uses value '['.
+            "text": {
+              "value": [
+                "Melbourne City",
+                "12.1% walk to work"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {
+      "stroke": null
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "gradientLength": 360,
+      "gradientThickness": 14
+    },
+    // TEXT style for text marks.
+    "text": {
+      "font": "IBM Plex Sans"
+    }
+  }
+}

@@ -1,0 +1,641 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Line chart with filled areas: average pedestrians per sensor for each hour of the day, weekdays vs weekends, City of Melbourne 2025",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 400,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/melbourne_weekday_hour_2025.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "hour": "number",
+        "total_count": "number",
+        "sensor_hours": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    {
+      // CALCULATE: makes the new column "day_type" from this formula.
+      "calculate": "indexof(['Saturday','Sunday'], datum.weekday) >= 0 ? 'Weekends' : 'Weekdays'",
+      "as": "day_type"
+    },
+    {
+      // AGGREGATE: collapses rows into one row per group (sum, count, min, max...).
+      "aggregate": [
+        {
+          "op": "sum",
+          "field": "total_count",
+          "as": "total"
+        },
+        {
+          "op": "sum",
+          "field": "sensor_hours",
+          "as": "hours"
+        }
+      ],
+      "groupby": [
+        "day_type",
+        "hour"
+      ]
+    },
+    {
+      // CALCULATE: makes the new column "avg_per_sensor" from this formula.
+      "calculate": "datum.total / datum.hours",
+      "as": "avg_per_sensor"
+    },
+    {
+      // CALCULATE: makes the new column "hour_label" from this formula.
+      "calculate": "datum.hour == 0 ? '12am' : datum.hour < 12 ? datum.hour + 'am' : datum.hour == 12 ? '12pm' : (datum.hour - 12) + 'pm'",
+      "as": "hour_label"
+    },
+    {
+      // CALCULATE: makes the new column "hour_type" from this formula.
+      "calculate": "(datum.day_type == 'Weekdays' && (datum.hour == 12 || datum.hour == 17)) || (datum.day_type == 'Weekends' && datum.hour == 14) ? 'Peak hour' : 'Other hours'",
+      "as": "hour_type"
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {
+      "stroke": null
+    },
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "labelFontSize": 11
+    },
+    // TEXT style for text marks.
+    "text": {
+      "font": "IBM Plex Sans",
+      "color": "#1f2e22"
+    }
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // MARK (this layer): AREA: a filled region under a line.
+      "mark": {
+        "type": "area",
+        "opacity": 0.14,
+        "interpolate": "monotone"
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          },
+          "stack": null
+        },
+        // COLOUR channel: hue or shade. Uses field 'day_type'.
+        "color": {
+          "field": "day_type",
+          "type": "nominal",
+          "title": null,
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              "Weekdays",
+              "Weekends"
+            ],
+            // RANGE: the colours or sizes it maps to.
+            "range": [
+              "#0f5c5e",
+              "#be6e33"
+            ]
+          },
+          // LEGEND: key explaining the colours or sizes.
+          "legend": {
+            "orient": "top",
+            "direction": "horizontal",
+            "symbolType": "stroke",
+            "symbolStrokeWidth": 4,
+            "labelFontSize": 12
+          }
+        }
+      }
+    },
+    {
+      // MARK (this layer): LINE: joins points in order.
+      "mark": {
+        "type": "line",
+        "strokeWidth": 3,
+        "interpolate": "monotone"
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        // COLOUR channel: hue or shade. Uses field 'day_type'.
+        "color": {
+          "field": "day_type",
+          "type": "nominal",
+          "title": null,
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              "Weekdays",
+              "Weekends"
+            ],
+            // RANGE: the colours or sizes it maps to.
+            "range": [
+              "#0f5c5e",
+              "#be6e33"
+            ]
+          },
+          // LEGEND: key explaining the colours or sizes.
+          "legend": {
+            "orient": "top",
+            "direction": "horizontal",
+            "symbolType": "stroke",
+            "symbolStrokeWidth": 4,
+            "labelFontSize": 12
+          }
+        },
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'day_type'.
+        "tooltip": [
+          {
+            "field": "day_type",
+            "title": "Type of day"
+          },
+          {
+            "field": "hour_label",
+            "title": "Hour starting"
+          },
+          {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "format": ",.0f",
+            "title": "Average pedestrians per sensor"
+          }
+        ]
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "(datum.day_type == 'Weekdays' && (datum.hour == 12 || datum.hour == 17)) || (datum.day_type == 'Weekends' && datum.hour == 14)"
+        }
+      ],
+      // MARK (this layer): POINT: a dot or symbol.
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 120,
+        "color": "#ad8a4e",
+        "stroke": "#ffffff",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'day_type'.
+        "tooltip": [
+          {
+            "field": "day_type",
+            "title": "Type of day"
+          },
+          {
+            "field": "hour_label",
+            "title": "Hour starting"
+          },
+          {
+            "field": "avg_per_sensor",
+            "type": "quantitative",
+            "format": ",.0f",
+            "title": "Average pedestrians per sensor"
+          }
+        ]
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "datum.day_type == 'Weekdays' && datum.hour == 17"
+        }
+      ],
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {
+        "type": "text",
+        "dy": -14,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "center",
+        "baseline": "bottom",
+        "dx": 0,
+        "color": "#1f2e22"
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        // TEXT channel: the words drawn. Uses value 'Evening peak'.
+        "text": {
+          "value": "Evening peak, 5pm"
+        }
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "datum.day_type == 'Weekdays' && datum.hour == 12"
+        }
+      ],
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {
+        "type": "text",
+        "dy": -8,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "right",
+        "baseline": "middle",
+        "dx": -12,
+        "color": "#1f2e22"
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        // TEXT channel: the words drawn. Uses value 'Lunchtime peak'.
+        "text": {
+          "value": "Lunchtime peak, 12pm"
+        }
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [
+        {
+          // FILTER: keeps only the rows where this expression is true.
+          "filter": "datum.day_type == 'Weekends' && datum.hour == 14"
+        }
+      ],
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {
+        "type": "text",
+        "dy": -14,
+        "fontSize": 12,
+        "fontWeight": 600,
+        "align": "center",
+        "color": "#8a4f20",
+        "baseline": "bottom",
+        "dx": 0
+      },
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'hour'.
+        "x": {
+          "field": "hour",
+          "type": "quantitative",
+          "title": "Hour of day",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              23
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "values": [
+              0,
+              3,
+              6,
+              9,
+              12,
+              15,
+              18,
+              21
+            ],
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "datum.value == 0 ? '12am' : datum.value < 12 ? datum.value + 'am' : datum.value == 12 ? '12pm' : (datum.value - 12) + 'pm'",
+            "labelAngle": 0,
+            "grid": false
+          }
+        },
+        // Y channel: vertical POSITION. Uses field 'avg_per_sensor'.
+        "y": {
+          "field": "avg_per_sensor",
+          "type": "quantitative",
+          "title": "Average pedestrians per sensor, per hour",
+          // SCALE: how data values map to the channel.
+          "scale": {
+            // DOMAIN: the data range (or class breaks) on this scale.
+            "domain": [
+              0,
+              1000
+            ],
+            "nice": false
+          },
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {
+            "tickCount": 5,
+            "format": ",",
+            // LABEL EXPRESSION: formula that writes each axis or legend label.
+            "labelExpr": "format(datum.value, ',.0f')"
+          }
+        },
+        // TEXT channel: the words drawn. Uses value 'Weekend peak'.
+        "text": {
+          "value": "Weekend peak, 2pm"
+        }
+      }
+    }
+  ]
+}

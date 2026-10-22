@@ -1,0 +1,170 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Lollipop chart: top 10 physical activities by adult participation rate (AusPlay 2025)",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 304,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/ausplay_participation_2025.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "rate_Total": "number",
+        "rate_Male": "number",
+        "rate_Female": "number",
+        "rate_15-17": "number",
+        "rate_18-24": "number",
+        "rate_25-34": "number",
+        "rate_35-44": "number",
+        "rate_45-54": "number",
+        "rate_55-64": "number",
+        "rate_65+": "number",
+        "participants_Total": "number",
+        "participants_Male": "number",
+        "participants_Female": "number",
+        "participants_15-17": "number",
+        "participants_18-24": "number",
+        "participants_25-34": "number",
+        "participants_35-44": "number",
+        "participants_45-54": "number",
+        "participants_55-64": "number",
+        "participants_65+": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    // WINDOW: calculates across ordered rows (rank, running total).
+    {"window": [{"op": "row_number", "as": "rank"}], "sort": [{"field": "rate_Total", "order": "descending"}]},
+    // FILTER: keeps only the rows where this expression is true.
+    {"filter": "datum.rank <= 10"},
+    {
+      // CALCULATE: makes the new column "highlight" from this formula.
+      "calculate": "datum.activity == 'Walking (Recreational)' ? 'Walking' : 'Other activity'",
+      "as": "highlight"
+    },
+    {
+      // CALCULATE: makes the new column "value_label" from this formula.
+      "calculate": "datum.activity == 'Walking (Recreational)' ? format(datum.rate_Total, '.0%') : ''",
+      "as": "value_label"
+    },
+    {
+      // CALCULATE: makes the new column "activity_label" from this formula.
+      "calculate": "datum.activity == 'Fitness/Gym' ? 'Fitness and gym' : datum.activity == 'Running/jogging' ? 'Running and jogging' : datum.activity == 'Football/soccer' ? 'Football (soccer)' : datum.activity",
+      "as": "activity_label"
+    }
+  ],
+  // ENCODING: links data fields to visual channels (position, colour, size...) for ALL layers below.
+  "encoding": {
+    // Y channel: vertical POSITION. Uses field 'activity'.
+    "y": {
+      "field": "activity",
+      "type": "nominal",
+      // SORT: order of the categories.
+      "sort": {"field": "rate_Total", "order": "descending"},
+      "title": null,
+      // AXIS: tick labels, format and title for this channel.
+      "axis": {"labelLimit": 220}
+    },
+    // X channel: horizontal POSITION. Uses field 'rate_Total'.
+    "x": {
+      "field": "rate_Total",
+      "type": "quantitative",
+      "title": "Adults who took part in the past 12 months",
+      // AXIS: tick labels, format and title for this channel.
+      "axis": {"format": "%", "tickCount": 5},
+      // SCALE: how data values map to the channel.
+      "scale": {"domain": [0, 0.55]}
+    }
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // MARK (this layer): RULE: a straight line (stem, whisker, leader, trend).
+      "mark": {"type": "rule", "strokeWidth": 2.5},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses datum '0'.
+        "x": {"datum": 0},
+        // X2 channel: where the mark ENDS on x (gives a bar/rule a start and end). Uses field 'rate_Total'.
+        "x2": {"field": "rate_Total"},
+        // COLOUR channel: hue or shade. Uses field 'highlight'.
+        "color": {
+          "field": "highlight",
+          "type": "nominal",
+          // LEGEND: key explaining the colours or sizes.
+          "legend": null,
+          // SCALE: how data values map to the channel.
+          "scale": {"domain": ["Walking", "Other activity"], "range": ["#0f5c5e", "#d5d9db"]}
+        }
+      }
+    },
+    {
+      // MARK (this layer): CIRCLE: a filled dot.
+      "mark": {"type": "circle", "size": 150, "opacity": 1},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // COLOUR channel: hue or shade. Uses field 'highlight'.
+        "color": {
+          "field": "highlight",
+          "type": "nominal",
+          // LEGEND: key explaining the colours or sizes.
+          "legend": null,
+          // SCALE: how data values map to the channel.
+          "scale": {"domain": ["Walking", "Other activity"], "range": ["#0f5c5e", "#d5d9db"]}
+        },
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'activity_label'.
+        "tooltip": [
+          {"field": "activity_label", "type": "nominal", "title": "Activity"},
+          {"field": "rate_Total", "type": "quantitative", "format": ".1%", "title": "Participation rate"},
+          {"field": "participants_Total", "type": "quantitative", "format": ",.0f", "title": "Participants"}
+        ]
+      }
+    },
+    {
+      // MARK (this layer): TEXT: draws words (labels and annotations).
+      "mark": {"type": "text", "align": "left", "dx": 12, "fontSize": 12, "fontWeight": 600},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {"text": {"field": "value_label"}, "color": {"value": "#1f2e22"}}
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {"stroke": null},
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 11,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // TEXT style for text marks.
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  }
+}

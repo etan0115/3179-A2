@@ -1,0 +1,213 @@
+
+{
+  // SCHEMA: tells Vega-Lite which version (v5) of the language this file uses.
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  // DESCRIPTION: plain-English summary of the chart. Not drawn on screen.
+  "description": "Dumbbell: recreational walking (AusPlay) vs walking to work (Census) by age group",
+  // WIDTH: 'container' makes the chart as wide as its card on the page; a number is pixels.
+  "width": "container",
+  // HEIGHT: chart height in pixels.
+  "height": 304,
+  // DATA: which file to read.
+  "data": {
+    // URL: path to the data file.
+    "url": "data/census2021_travel_to_work_by_age.csv",
+    // FORMAT: how to read the file.
+    "format": {
+      "type": "csv",
+      "parse": {
+        "15-24": "number",
+        "25-34": "number",
+        "35-44": "number",
+        "45-54": "number",
+        "55-64": "number",
+        "65-74": "number",
+        "75+": "number"
+      }
+    }
+  },
+  // TRANSFORM: data-prep steps. They run TOP TO BOTTOM; each step feeds the next.
+  "transform": [
+    // FILTER: keeps only the rows where this expression is true.
+    {"filter": "datum.Mode == 'Walked only' || datum.Mode == 'Total'"},
+    // FOLD: turns several columns into rows (wide to long).
+    {"fold": ["15-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+"], "as": ["census_band", "people"]},
+    {
+      // CALCULATE: makes the new column "age_group" from this formula.
+      "calculate": "datum.census_band == '65-74' || datum.census_band == '75+' ? '65+' : datum.census_band",
+      "as": "age_group"
+    },
+    // AGGREGATE: collapses rows into one row per group (sum, count, min, max...).
+    {"aggregate": [{"op": "sum", "field": "people", "as": "people"}], "groupby": ["age_group", "Mode"]},
+    // PIVOT: turns rows into columns (long to wide); the opposite of fold.
+    {"pivot": "Mode", "value": "people", "groupby": ["age_group"]},
+    // CALCULATE: makes the new column "Walk to work" from this formula.
+    {"calculate": "datum['Walked only'] / datum.Total", "as": "Walk to work"},
+    // CALCULATE: makes the new column "age_group_label" from this formula.
+    {"calculate": "replace(replace(datum.age_group, '-', ' to '), '+', ' and over')", "as": "age_group_label"},
+    // CALCULATE: makes the new column "activity" from this formula.
+    {"calculate": "'Walking (Recreational)'", "as": "activity"},
+    {
+      // LOOKUP: joins a second table (here a file or list) by a shared key. The value on this line is the key in THIS data.
+      "lookup": "activity",
+      // FROM: the second table used for the join.
+      "from": {
+        // SECOND TABLE: the file joined in by the lookup.
+        "data": {
+          // URL: path to the data file.
+          "url": "data/ausplay_participation_2025.csv",
+          // FORMAT: how to read the file.
+          "format": {
+            "type": "csv",
+            "parse": {
+              "rate_Total": "number",
+              "rate_Male": "number",
+              "rate_Female": "number",
+              "rate_15-17": "number",
+              "rate_18-24": "number",
+              "rate_25-34": "number",
+              "rate_35-44": "number",
+              "rate_45-54": "number",
+              "rate_55-64": "number",
+              "rate_65+": "number",
+              "participants_Total": "number",
+              "participants_Male": "number",
+              "participants_Female": "number",
+              "participants_15-17": "number",
+              "participants_18-24": "number",
+              "participants_25-34": "number",
+              "participants_35-44": "number",
+              "participants_45-54": "number",
+              "participants_55-64": "number",
+              "participants_65+": "number"
+            }
+          }
+        },
+        "key": "activity",
+        "fields": [
+          "rate_15-17",
+          "rate_18-24",
+          "rate_25-34",
+          "rate_35-44",
+          "rate_45-54",
+          "rate_55-64",
+          "rate_65+",
+          "participants_15-17",
+          "participants_18-24"
+        ]
+      }
+    },
+    {
+      // CALCULATE: makes the new column "Recreational walking" from this formula.
+      "calculate": "datum.age_group == '15-24' ? (toNumber(datum['participants_15-17']) + toNumber(datum['participants_18-24'])) / (toNumber(datum['participants_15-17']) / toNumber(datum['rate_15-17']) + toNumber(datum['participants_18-24']) / toNumber(datum['rate_18-24'])) : toNumber(datum['rate_' + datum.age_group])",
+      "as": "Recreational walking"
+    }
+  ],
+  // ENCODING: links data fields to visual channels (position, colour, size...) for ALL layers below.
+  "encoding": {
+    // Y channel: vertical POSITION. Uses field 'age_group'.
+    "y": {
+      "field": "age_group",
+      "type": "ordinal",
+      // SORT: order of the categories.
+      "sort": ["15-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+      "title": "Age group"
+    }
+  },
+  // LAYER: each item below is a mark stacked on the same chart. First item is at the bottom.
+  "layer": [
+    {
+      // MARK (this layer): RULE: a straight line (stem, whisker, leader, trend).
+      "mark": {"type": "rule"},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'Walk to work'.
+        "x": {"field": "Walk to work", "type": "quantitative"},
+        // X2 channel: where the mark ENDS on x (gives a bar/rule a start and end). Uses field 'Recreational walking'.
+        "x2": {"field": "Recreational walking"},
+        // COLOUR channel: hue or shade. Uses value '#ad8a4e'.
+        "color": {"condition": {"test": "datum.age_group == '55-64'", "value": "#ad8a4e"}, "value": "#cfc8b6"},
+        // STROKE WIDTH channel: outline thickness. Uses value '5'.
+        "strokeWidth": {"condition": {"test": "datum.age_group == '55-64'", "value": 5}, "value": 2}
+      }
+    },
+    {
+      // TRANSFORM: extra data-prep steps that apply to THIS layer only.
+      "transform": [{"fold": ["Recreational walking", "Walk to work"], "as": ["measure", "share"]}],
+      // MARK (this layer): POINT: a dot or symbol.
+      "mark": {"type": "point", "filled": true, "size": 110, "opacity": 1},
+      // ENCODING: links data fields to visual channels for THIS layer.
+      "encoding": {
+        // X channel: horizontal POSITION. Uses field 'share'.
+        "x": {
+          "field": "share",
+          "type": "quantitative",
+          "title": "Share of age group",
+          // SCALE: how data values map to the channel.
+          "scale": {"domain": [0, 0.8]},
+          // AXIS: tick labels, format and title for this channel.
+          "axis": {"format": "%", "tickCount": 5}
+        },
+        // COLOUR channel: hue or shade. Uses field 'measure'.
+        "color": {
+          "field": "measure",
+          "type": "nominal",
+          "title": null,
+          // SCALE: how data values map to the channel.
+          "scale": {"domain": ["Recreational walking", "Walk to work"], "range": ["#0f5c5e", "#7fb8ad"]},
+          // LEGEND: key explaining the colours or sizes.
+          "legend": {"orient": "top"}
+        },
+        // TOOLTIP: text shown when you hover (details on demand). Uses field 'age_group_label'.
+        "tooltip": [
+          {"field": "age_group_label", "title": "Age group"},
+          {"field": "measure", "title": "Measure"},
+          {"field": "share", "type": "quantitative", "format": ".1%", "title": "Percentage of people"}
+        ]
+      }
+    }
+  ],
+  // CONFIG: styling only (fonts, colours, gridlines). It changes how the chart looks, never what it says.
+  "config": {
+    // BACKGROUND: transparent, so the card colour shows through.
+    "background": "transparent",
+    // FONT used everywhere.
+    "font": "IBM Plex Sans",
+    // VIEW: removes the box border around the plot (less ink).
+    "view": {"stroke": null},
+    // AXIS style for every axis.
+    "axis": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "gridColor": "#ece8dd",
+      "domainColor": "#c9c3b3",
+      "tickColor": "#c9c3b3",
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // LEGEND style for every legend.
+    "legend": {
+      "labelColor": "#5b6058",
+      "titleColor": "#1f2e22",
+      "titleLimit": 320,
+      "labelLimit": 260,
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "titleFontWeight": 500
+    },
+    // TEXT style for text marks.
+    "text": {"font": "IBM Plex Sans", "color": "#1f2e22"}
+  },
+  // TITLE: text shown with the chart.
+  "title": {
+    "text": ["Widest gap, at 55–64 (gold line): 66% walk for leisure", "but only 3% walk to work"],
+    "orient": "bottom",
+    "anchor": "start",
+    "offset": 12,
+    "fontSize": 12,
+    "fontWeight": 600,
+    "color": "#1f2e22",
+    "lineHeight": 16
+  }
+}
