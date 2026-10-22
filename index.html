@@ -1,41 +1,56 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- HEAD: page settings. charset = text encoding; viewport = scale correctly on phones; description = summary for search engines. -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Walking and active travel in Australia, from national participation to Melbourne's pedestrian streets.">
+  <!-- TITLE shown on the browser tab. -->
   <title>Walking Australia — Active Travel in 2025</title>
 
+  <!-- FONTS: connect early to Google Fonts, then load Fraunces (headings) and IBM Plex Sans (body text). -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;650&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
 
+  <!-- CSS: all colours, fonts and layout live in css/style.css. -->
   <link rel="stylesheet" href="css/style.css">
 
+  <!-- LIBRARIES: Vega (draws), Vega-Lite (turns your JSON specs into Vega), Vega-Embed (puts a chart into a page box). Loaded from jsDelivr. -->
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 </head>
 
 <body>
+  <!-- SKIP LINK: hidden until you press Tab; lets keyboard users jump straight to the story (accessibility). -->
   <a class="skip-link" href="#main-content">Skip to story</a>
 
+  <!-- HERO (top of page): title, subtitle, byline, intro text, photo and the 50% card. -->
   <header class="hero" id="top">
     <div class="hero-inner">
       <div class="hero-copy">
+        <!-- EYEBROW: small label naming the topic from the brief. -->
         <p class="eyebrow">Travel, Transport and Tourism <span>·</span> Walking and Active Travel</p>
+        <!-- MAIN TITLE (h1): kept short after lecturer feedback. -->
         <h1>Walking Australia</h1>
+        <!-- SUBTITLE (dek): one-line hook under the title. -->
         <p class="dek">The country's favourite activity needs no membership, team or booking.</p>
+        <!-- BYLINE: author name and publication date (required by the brief). -->
         <p class="byline">By <strong>Eebel Tan</strong> <span>·</span> Published 25 October 2026</p>
 
+        <!-- INTRO PARAGRAPH: the main fact, with key words in bold. -->
         <p class="hero-intro">
           <strong>Half of Australian adults</strong> walked for exercise or leisure last year, more than any sport or gym activity.
         </p>
+        <!-- SECOND INTRO: the Malaysian angle (Kuala Lumpur plan) and a roadmap of the story. -->
         <p class="hero-intro hero-intro-secondary">
           In Malaysia, Kuala Lumpur City Hall aims to raise walking and cycling from <strong>18% to 40% of trips</strong> to work or school by 2028. This story moves from Australia's national picture to Melbourne's footpaths: <strong>who walks, where, when, and why.</strong>
         </p>
       </div>
 
+      <!-- HERO PHOTO with the dark 50% statistic card overlapping its bottom-left corner. -->
       <div class="hero-visual">
         <img src="img/hero-walk.jpg" alt="Two people walking over orange coastal rocks and low scrub under a cloudy blue sky" width="2000" height="1335">
         <aside class="hero-stat" aria-label="Key statistic: 50 percent of Australian adults walk for recreation">
@@ -46,6 +61,7 @@
       </div>
     </div>
 
+    <!-- SCROLL CUE: small "Scroll to explore" hint at the bottom of the hero. -->
     <div class="scroll-cue" aria-hidden="true">
       <span></span>
       Scroll to explore
@@ -54,6 +70,7 @@
 
   <hr class="hero-divider">
 
+  <!-- SECTION MENU: sticky bar of links to each section (anchor links like #who-walks). -->
   <nav class="section-nav" aria-label="Story sections">
     <div class="section-nav-inner">
       <span class="section-nav-label">In this story</span>
@@ -66,6 +83,7 @@
     </div>
   </nav>
 
+  <!-- PROGRESS DOTS: fixed dots on the right; JavaScript at the bottom highlights the current section. -->
   <nav class="progress-dots" aria-label="Story progress">
     <a href="#hook" data-section="hook" data-label="Overview" aria-label="Go to Overview"><span></span></a>
     <a href="#who-walks" data-section="who-walks" data-label="Who walks" aria-label="Go to Who walks"><span></span></a>
@@ -75,184 +93,287 @@
     <a href="#takeaway" data-section="takeaway" data-label="Takeaway" aria-label="Go to Takeaway"><span></span></a>
   </nav>
 
+  <!-- MAIN: the six story sections. -->
   <main id="main-content">
+    <!-- SECTION 01 (Overview): pictogram + lollipop chart, side by side. -->
     <section id="hook">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">01</span>
       <h2>Australia's favourite activity</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       <strong>Half of Australian adults</strong> walked for recreation last year. Walking is the country's <strong>most popular way to stay active</strong>.
     </p>
 
+    <!-- CHART ROW: CSS grid with two columns, so two cards sit side by side. -->
     <div class="chart-row editorial-grid">
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Pictogram / icon array</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">1 in 2 Australian adults walked for recreation in the past year</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="hook-pictogram" data-spec="specs/hook-pictogram.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Each figure is <strong>1% of adults</strong> (15 and over). Coloured figures <strong>walked for recreation</strong> last year.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: AusPlay National Data Tables, 2025</p>
       </div>
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Ranked comparison</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Walking is Australia's most popular activity, 16 percentage points ahead of the gym</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="hook-ranked-activities" data-spec="specs/hook-ranked-activities.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Top 10 activities by <strong>adult participation</strong>, 2025.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: AusPlay, 2023–25 baseline</p>
       </div>
     </div>
   </div>
 </section>
+    <!-- SECTION 02 (Who walks): age line chart + dumbbell, side by side. -->
     <section id="who-walks">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">02</span>
       <h2>Who walks, and for what</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       Leisure walking rises with age, <strong>peaking at 66% of 55–64 year olds</strong>. Walking to work stays rare: <strong>under 4 in 100 workers</strong>.
     </p>
 
+    <!-- CHART ROW: CSS grid with two columns, so two cards sit side by side. -->
     <div class="chart-row editorial-grid">
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Line / age trend</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Recreational walking climbs from 30% at 15–17 to a peak of 66% at 55–64</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="who-age-trend" data-spec="specs/who-age-trend.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Share of each age group who <strong>walked for recreation</strong> in the past year.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: AusPlay</p>
       </div>
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Dumbbell / connected dot plot</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Walking to work stays under 4% at every age, while leisure walking climbs</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="who-dumbbell" data-spec="specs/who-dumbbell.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Recreational walking (AusPlay, 2025) against walking to work (Census day, 10 August 2021). The surveys <strong>differ</strong>, so <strong>compare the gap</strong>, not exact values. AusPlay's 15–17 and 18–24 groups are combined into 15–24.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: AusPlay 2025 (Australian Sports Commission) and Australian Bureau of Statistics, Census 2021</p>
       </div>
     </div>
   </div>
 </section>
+    <!-- SECTION 03 (National picture): state choropleth, Victoria choropleth (dropdown), box plot - three full-width cards, stacked. -->
     <section id="national-picture">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">03</span>
       <h2>Where people walk: the national picture</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       Only about <strong>2.5% of Australian workers</strong> walk to work, but more <strong>where homes and jobs sit close together</strong>. The <strong>Northern Territory</strong> leads the states; in Victoria, the <strong>city centre and small country towns</strong> lead. Victoria has 66 statistical regions, each about the size of a few suburbs.
     </p>
 
+    <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
     <div class="chart-card editorial-chart chart-wide chart-first">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Choropleth</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">The Northern Territory walks to work at 7.6%, three times the national average</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="national-choropleth" data-spec="specs/national-choropleth.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Share of employed persons who <strong>walked only</strong>, by <strong>state and territory</strong>. Census day fell in <strong>COVID-19 lockdowns</strong> in New South Wales, Victoria and the Australian Capital Territory, lowering commuting there.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, Transport data summary</p>
     </div>
 
+    <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
     <div class="chart-card editorial-chart chart-wide">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Choropleth (regions)</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Melbourne City walks to work at 12.1%, nearly double the next region, Yarra (6.4%)</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="national-choropleth-sa3" data-spec="specs/national-choropleth-sa3.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Share of employed persons who <strong>walked only</strong>, by statistical region, Victoria. <strong>Victorian average: 2.3%</strong>. <strong>Use the dropdown</strong> to zoom into Greater Melbourne.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
     </div>
 
+    <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
     <div class="chart-card editorial-chart chart-wide">
+      <!-- PILL: names the idiom (chart type). -->
       <span class="pill">Distribution</span>
+      <!-- INSIGHT HEADLINE: the one message of this chart. -->
       <h3 class="card-insight">On Census day, regional towns out-walked locked-down inner Melbourne; outer suburbs walk least</h3>
+      <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
       <div class="chart-canvas" id="national-sorted-bar" data-spec="specs/national-sorted-bar.json" data-pending="chart pending"></div>
+      <!-- CAPTION: how to read the chart (and any interaction). -->
       <p class="card-caption">Each dot is one of Victoria's 66 statistical regions. Each box covers the <strong>middle half</strong>; the line is the <strong>median</strong>. Shares are of all employed people, including those working at home.</p>
+      <!-- SOURCE of the data used in this chart. -->
       <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
     </div>
   </div>
 </section>
+    <!-- SECTION 04 (Melbourne): proportional symbol + hex-bin maps, then heatmap + hourly line chart. -->
     <section id="melbourne">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">04</span>
       <h2>Melbourne, on foot</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       Foot traffic gathers in <strong>a few city-centre blocks</strong>. Weekdays peak <strong>at lunchtime and after work</strong>; weekends build into <strong>one long afternoon</strong>.
     </p>
 
+    <!-- CHART ROW: CSS grid with two columns, so two cards sit side by side. -->
     <div class="chart-row editorial-grid">
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Proportional symbol map</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Flinders Lane and Swanston Street saw over 14 million pedestrians in 2025, the city's busiest corner</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="melbourne-proportional-symbol" data-spec="specs/melbourne-proportional-symbol.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Annual pedestrians at each sensor. <strong>Circle area</strong> shows the <strong>number of pedestrians</strong>.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
       </div>
 
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Hex-bin map</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Foot traffic concentrates in a few city-centre blocks around Swanston and Flinders Streets</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="melbourne-hexbin" data-spec="specs/melbourne-hexbin.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">The same sensors (white dots), grouped into hexagons. Colour shows the <strong>average yearly count per sensor</strong>; each darker step means roughly 10 times more people. <strong>Drag the slider</strong> to resize hexagons. <strong>Blank areas have no sensor</strong>, not no pedestrians.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
       </div>
     </div>
 
+    <!-- CHART ROW: CSS grid with two columns, so two cards sit side by side. -->
     <div class="chart-row editorial-grid">
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Heatmap</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Weekdays peak at 5–6pm after a busy lunchtime; weekends peak earlier, at 2–3pm</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="melbourne-heatmap" data-spec="specs/melbourne-heatmap.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption"><strong>Average pedestrians</strong> per sensor in <strong>each hour</strong>, by <strong>day of week</strong>, 2025.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
       </div>
 
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Line chart / area chart</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Weekdays peak at lunchtime and 5pm; weekends peak once, at 2pm</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="melbourne-hourly-profile" data-spec="specs/melbourne-hourly-profile.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Average pedestrians per sensor by hour, <strong>weekdays</strong> against <strong>weekends</strong>. <strong>Gold dots</strong> mark peak hours; hover for exact counts.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: City of Melbourne, Pedestrian Counting System, 2025</p>
       </div>
     </div>
   </div>
 </section>
+    <!-- SECTION 05 (Why it matters): scatterplot + waffle charts. -->
     <section id="why-it-matters">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">05</span>
       <h2>Why it matters: walking or driving</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       Regions where <strong>more people walk to work have fewer people driving</strong>: less traffic and fewer emissions. Census day fell in <strong>COVID-19 lockdowns</strong>, so commuting in New South Wales, Victoria and the Australian Capital Territory is lower than usual.
     </p>
 
+    <!-- CHART ROW: CSS grid with two columns, so two cards sit side by side. -->
     <div class="chart-row editorial-grid">
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Scatter plot</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Where more people walk to work, fewer drive: in Melbourne City, 1 in 4 commuters walked</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="why-walk-vs-car" data-spec="specs/why-walk-vs-car.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">Each dot is one of Victoria's 66 statistical regions, coloured by region type. It compares commuters who <strong>walked</strong> with those who <strong>drove</strong>; people working at home are excluded. The <strong>dashed line</strong> shows the trend: <strong>more driving, less walking</strong>.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, General Community Profile (G62)</p>
       </div>
 
+      <!-- CHART CARD: the same pattern for every chart: pill, insight headline, chart box, caption, source. -->
       <div class="chart-card editorial-chart">
+        <!-- PILL: names the idiom (chart type). -->
         <span class="pill">Waffle charts (small multiples)</span>
+        <!-- INSIGHT HEADLINE: the one message of this chart. -->
         <h3 class="card-insight">Cars carried 47% to 71% of workers in every state; walking never passed 8%</h3>
+        <!-- CHART BOX: empty div; JavaScript draws the chart from data-spec into the box with this id. -->
         <div class="chart-canvas" id="why-mode-share" data-spec="specs/why-mode-share.json" data-pending="chart pending"></div>
+        <!-- CAPTION: how to read the chart (and any interaction). -->
         <p class="card-caption">How employed people travelled to work on Census day, 10 August 2021. <strong>Each square is 1% of workers</strong>. Lockdowns kept 31% of New South Wales and 26% of Victorian workers at home. <strong>Click a legend item</strong> to highlight one mode.</p>
+        <!-- SOURCE of the data used in this chart. -->
         <p class="card-source">Source: Australian Bureau of Statistics, Census 2021, Transport data summary (Table 3)</p>
       </div>
     </div>
   </div>
 </section>
+    <!-- SECTION 06 (Takeaway): closing paragraph and three big numbers over a photo background. -->
     <section id="takeaway" class="takeaway">
   <div class="section-inner editorial-section">
+    <!-- SECTION HEADING: number (01..06) and the h2 title. -->
     <div class="section-heading">
       <span class="section-number">06</span>
       <h2>The takeaway</h2>
     </div>
+    <!-- LEDE: the section's short intro paragraph (lines capped at about 10 words by CSS). -->
     <p class="lede">
       Walking is Australia's favourite activity, but <strong>mostly for leisure, not commuting</strong>. <strong>Compact city centres and small towns</strong> show what walkable cities look like, with lessons for places such as Kuala Lumpur.
     </p>
 
+    <!-- TAKEAWAY STATS: three large numbers summarising the story. -->
     <div class="takeaway-stats">
       <div class="stat">
         <span class="stat-number">50%</span>
@@ -271,6 +392,7 @@
 </section>
   </main>
 
+  <!-- FOOTER: author, unit, date, and the list of data sources as links. -->
   <footer>
     <div class="footer-inner">
       <div class="footer-brand">
@@ -280,6 +402,7 @@
       <div class="footer-meta">
         <p>Published 25 October 2026</p>
         <p class="sources-label">Data sources</p>
+        <!-- SOURCES LIST: one link per dataset. -->
         <ul class="sources">
           <li><a href="https://www.ausport.gov.au/clearinghouse/research/ausplay/results" target="_blank" rel="noopener">AusPlay National Data Tables, Australian Sports Commission (2025)</a></li>
           <li><a href="https://www.abs.gov.au/statistics/industry/tourism-and-transport/transport-census/latest-release" target="_blank" rel="noopener">Australian Bureau of Statistics, Census 2021, Transport data summary</a></li>
@@ -292,20 +415,35 @@
     </div>
   </footer>
 
+  <!-- JAVASCRIPT: loads every chart, fixes stuck tooltips, drives the progress dots, fades cards in. -->
   <script>
+    // loadChart(id, specPath): vegaEmbed draws the spec into the element with that id. actions:false hides the menu, renderer svg = sharp vector output, autosize fit = fill the card. The view is saved in window.views.
     function loadChart(id, specPath) {
-      vegaEmbed('#' + id, specPath, {
-        actions: false,
-        renderer: 'svg',
-        config: { autosize: { type: 'fit', contains: 'padding' } }
-      })
+      // ANNOTATED VERSION: load the commented copy (specs/NAME.annotated.jsonc) instead of specs/NAME.json.
+      const annotatedPath = specPath.replace(/\.json$/, '.annotated.jsonc');
+      fetch(annotatedPath)
+        .then(response => response.text())
+        .then(text => {
+          // Browsers cannot read JSON with comments, so remove every line that starts with //
+          // and turn what is left (the exact original JSON) into a spec object.
+          const cleanJson = text.split('\n').filter(line => !line.trim().startsWith('//')).join('\n');
+          const spec = JSON.parse(cleanJson);
+          // Same drawing call as the clean version: no menu, sharp SVG output, chart fits its card.
+          return vegaEmbed('#' + id, spec, {
+            actions: false,
+            renderer: 'svg',
+            config: { autosize: { type: 'fit', contains: 'padding' } }
+          });
+        })
         .then(res => {
+          // Keep each chart's view so it can be inspected in the browser console if needed.
           window.views = window.views || {};
           window.views[id] = res.view;
         })
         .catch(console.error);
     }
 
+    // One call per chart (13 in total). First name = the div id in the HTML, second = the JSON spec file.
     loadChart('hook-pictogram', 'specs/hook-pictogram.json');
     loadChart('hook-ranked-activities', 'specs/hook-ranked-activities.json');
     loadChart('who-age-trend', 'specs/who-age-trend.json');
@@ -323,15 +461,18 @@
     // Hide any chart tooltip that is left behind when the page scrolls or the
     // pointer leaves a chart (browsers do not always send a "pointer out" event
     // while the page moves under a stationary pointer).
+    // hideChartTooltip(): hides a tooltip left on screen after scrolling (browsers do not always send pointer-out while the page moves).
     function hideChartTooltip() {
       const tip = document.getElementById('vg-tooltip-element');
       if (tip) tip.classList.remove('visible');
     }
+    // Run hideChartTooltip on scroll, wheel, touch, key, resize, blur, and when the pointer leaves a chart.
     ['scroll', 'wheel', 'touchmove', 'keydown', 'resize', 'blur'].forEach(evt =>
       window.addEventListener(evt, hideChartTooltip, { passive: true }));
     document.querySelectorAll('.chart-canvas').forEach(el =>
       el.addEventListener('pointerleave', hideChartTooltip));
 
+    // PROGRESS DOTS: an IntersectionObserver watches each section; when one is in the middle 20% of the screen its dot gets the is-active class.
     const dots = document.querySelectorAll('.progress-dots a');
     const sectionsInView = document.querySelectorAll('section[id]');
 
@@ -348,6 +489,7 @@
     sectionsInView.forEach((section) => spy.observe(section));
 
     // Gentle reveal only when motion is allowed.
+    // FADE-IN: a second IntersectionObserver adds is-visible to headings, ledes and cards as they appear. Skipped if the viewer prefers reduced motion (accessibility).
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const revealItems = document.querySelectorAll('.section-heading, .lede, .chart-card, .takeaway-stats');
       const revealObserver = new IntersectionObserver((entries, observer) => {
