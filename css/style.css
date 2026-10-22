@@ -1,4 +1,3 @@
-/* NOTE: DESIGN TOKENS: colour palette, widths and fonts as variables. Change one value here to restyle the whole page. */
 :root {
   --bg: #f3efe5;
   --surface: #fbf9f3;
@@ -19,13 +18,10 @@
   --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* NOTE: Box-sizing: padding and borders count inside an element's width (easier layout). */
 * { box-sizing: border-box; }
 
-/* NOTE: Smooth scrolling for menu links. */
 html { scroll-behavior: smooth; }
 
-/* NOTE: Page background, text colour, body font, size and line height. */
 body {
   margin: 0;
   background: var(--bg);
@@ -36,15 +32,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* NOTE: Links inherit the text colour. */
 a { color: inherit; }
-/* NOTE: Visible gold outline when a link is reached by keyboard (accessibility). */
 a:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 4px;
 }
 
-/* NOTE: Skip link sits off-screen until focused with the keyboard. */
 .skip-link {
   position: fixed;
   left: 18px;
@@ -57,7 +50,6 @@ a:focus-visible {
 }
 .skip-link:focus { top: 18px; }
 
-/* NOTE: HERO: fills most of the first screen and centres its content. */
 .hero {
   min-height: min(900px, 94vh);
   display: flex;
@@ -70,7 +62,6 @@ a:focus-visible {
 
 
 
-/* NOTE: Hero grid: text column on the left, photo column (340 to 540 px) on the right. */
 .hero-inner {
   width: min(var(--max), calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
@@ -93,21 +84,18 @@ a:focus-visible {
   font-weight: 600;
 }
 
-/* NOTE: Small uppercase topic label above the title. */
 .eyebrow {
   color: var(--teal-dark);
   margin: 0 0 24px;
 }
 .eyebrow span, .byline span { color: var(--gold); margin: 0 .35em; }
 
-/* NOTE: Serif display font for headings and big numbers. */
 h1, h2, .stat-number, .hero-stat strong {
   font-family: var(--serif);
   font-weight: 600;
   letter-spacing: -.025em;
 }
 
-/* NOTE: Main title size scales with screen width via clamp(min, preferred, max). */
 h1 {
   max-width: 920px;
   margin: 0;
@@ -115,7 +103,6 @@ h1 {
   line-height: 1;
 }
 
-/* NOTE: Subtitle style. */
 .dek {
   max-width: 34ch;
   margin: 14px 0 0;
@@ -126,14 +113,12 @@ h1 {
   color: var(--ink-soft);
 }
 
-/* NOTE: Author and date line. */
 .byline {
   margin: 28px 0 0;
   color: var(--muted);
   font-size: .88rem;
 }
 
-/* NOTE: Intro paragraph; max-width in ch keeps lines to about 10 words. */
 .hero-intro {
   max-width: 36ch;   /* about 10 words per line */
   margin: 38px 0 0;
@@ -146,12 +131,10 @@ h1 {
   font-size: 1rem;
 }
 
-/* NOTE: Wrapper for the hero photo; positions the 50% card relative to it. */
 .hero-visual {
   position: relative;
   margin: 0 0 28px 20px;
 }
-/* NOTE: Photo crop: object-fit cover fills the box; object-position chooses which part stays visible. */
 .hero-visual img {
   display: block;
   width: 100%;
@@ -160,7 +143,6 @@ h1 {
   object-position: 100% 50%;
   border-radius: 14px;
 }
-/* NOTE: The dark 50% card, absolutely positioned over the photo's bottom-left corner (figure-ground). */
 .hero-stat {
   position: absolute;
   left: -20px;
@@ -209,7 +191,6 @@ h1 {
   line-height: 1.45;
 }
 
-/* NOTE: "Scroll to explore" hint. */
 .scroll-cue {
   position: absolute;
   bottom: 25px;
@@ -236,7 +217,6 @@ h1 {
   border-top: 1px solid var(--rule);
 }
 
-/* NOTE: SECTION MENU: position sticky keeps it at the top while scrolling; backdrop-filter blurs what is behind. */
 .section-nav {
   position: sticky;
   top: 0;
@@ -273,7 +253,6 @@ h1 {
   margin-right: auto;
 }
 
-/* NOTE: PROGRESS DOTS: position fixed on the right edge of the screen. */
 .progress-dots {
   position: fixed;
   right: 22px;
@@ -300,7 +279,6 @@ h1 {
   transition: transform .2s ease, opacity .2s ease, background .2s ease;
 }
 .progress-dots a:hover span,
-/* NOTE: Style of the dot for the section currently in view (class added by JavaScript). */
 .progress-dots a.is-active span {
   transform: scale(1.8);
   opacity: 1;
@@ -326,20 +304,17 @@ h1 {
   transform: translateX(0);
 }
 
-/* NOTE: Vertical padding for every story section. */
 section {
   scroll-margin-top: 90px;
   padding: 96px 0;
 }
 section + section { border-top: 1px solid var(--rule); }
 
-/* NOTE: Centres section content with a maximum width. */
 .section-inner {
   width: min(var(--max), calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
 }
 
-/* NOTE: Section number above the h2 title. */
 .section-heading {
   display: flex;
   flex-direction: column;
@@ -350,7 +325,6 @@ section + section { border-top: 1px solid var(--rule); }
   color: var(--gold);
   font-variant-numeric: tabular-nums;
 }
-/* NOTE: Section title size (clamp scales it). */
 h2 {
   margin: 0;
   font-size: clamp(2rem, 3vw, 2.8rem);
@@ -358,7 +332,6 @@ h2 {
 }
 .lede strong { color: var(--ink); font-weight: 600; }
 .takeaway .lede strong { color: var(--white); }
-/* NOTE: Section intro paragraph; max-width 42ch caps lines at about 10 words. */
 .lede {
   max-width: 42ch;   /* about 10 words per line */
   margin: 0 0 48px;
@@ -367,7 +340,6 @@ h2 {
   line-height: 1.7;
 }
 
-/* NOTE: TWO-COLUMN GRID: places two chart cards side by side (this is what puts charts next to each other, not Vega-Lite concat). */
 .chart-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -377,7 +349,6 @@ h2 {
 }
 .chart-row + .chart-row { margin-top: clamp(35px, 5vw, 70px); }
 
-/* NOTE: CHART CARD: one chart with its pill, headline, box, caption and source. */
 .chart-card {
   min-width: 0;
   display: flex;                 /* fallback for browsers without subgrid */
@@ -394,11 +365,9 @@ h2 {
   width: 46px;
   border-top: 3px solid var(--teal);
 }
-/* NOTE: Full-width card (used for the stacked maps and box plot). */
 .chart-card.chart-wide { margin-top: 54px; }
 .chart-card.chart-first { margin-top: 0; }
 
-/* NOTE: Small label naming the idiom. */
 .pill {
   display: inline-block;
   align-self: flex-start;        /* flex fallback */
@@ -406,7 +375,6 @@ h2 {
   color: var(--teal-dark);
   margin-bottom: 9px;
 }
-/* NOTE: Insight headline: same min height in a row so both cards line up. */
 .card-insight {
   min-height: calc(2 * 1.35em);   /* headlines in a row take the same space */
   margin: 0 0 20px;
@@ -416,7 +384,6 @@ h2 {
   font-weight: 600;
   letter-spacing: -.01em;
 }
-/* NOTE: CHART BOX: the light panel each Vega-Lite chart is drawn into (--surface colour). */
 .chart-canvas {
   flex: 1;
   width: 100%;
@@ -435,7 +402,6 @@ h2 {
 .chart-canvas .vega-embed summary { display: none; }
 
 .card-caption strong { color: var(--ink); font-weight: 600; }
-/* NOTE: Caption text; max-width keeps lines short. */
 .card-caption {
   margin: 13px 0 0;
   max-width: 42ch;   /* about 10 words per line */
@@ -443,7 +409,6 @@ h2 {
   font-size: .9rem;
   line-height: 1.55;
 }
-/* NOTE: Small grey source line. */
 .card-source {
   max-width: 62ch;
   margin: 7px 0 0;
@@ -453,7 +418,6 @@ h2 {
   letter-spacing: .02em;
 }
 
-/* NOTE: TAKEAWAY: photo background darkened by a gradient overlay for readable white text. */
 .takeaway {
   position: relative;
   /* dark green overlay keeps the white text readable over the photo */
@@ -478,7 +442,6 @@ h2 {
 .takeaway .section-number { color: #d4b36a; }
 .takeaway .lede { color: #c7d6d1; }
 
-/* NOTE: Three-column grid for the three big numbers. */
 .takeaway-stats {
   margin: 64px 0 0;
   display: grid;
@@ -491,7 +454,6 @@ h2 {
   border-left: 1px solid rgba(255,255,255,.2);
 }
 .stat:first-child { border-left: 0; padding-left: 0; }
-/* NOTE: Big gold numbers. */
 .stat-number {
   display: block;
   font-size: clamp(3.6rem, 6vw, 6.5rem);
@@ -506,13 +468,11 @@ h2 {
   line-height: 1.55;
 }
 
-/* NOTE: FOOTER: dark green band. */
 footer {
   background: #102f2a;
   color: #aec0ba;
   padding: 58px 0 70px;
 }
-/* NOTE: Footer grid: brand on the left, sources on the right. */
 .footer-inner {
   width: min(var(--max), calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
@@ -543,7 +503,6 @@ footer {
   color: #b3c4be;
   font-size: .78rem !important;
 }
-/* NOTE: Sources list without bullets. */
 .sources {
   list-style: none;
   margin: 10px 0 0;
@@ -559,7 +518,6 @@ footer {
   color: #c3d1cc;
 }
 
-/* NOTE: FADE-IN start state (transparent, slightly lower); JavaScript adds is-visible. */
 .reveal {
   opacity: 0;
   transform: translateY(16px);
@@ -567,7 +525,6 @@ footer {
 }
 .reveal.is-visible { opacity: 1; transform: none; }
 
-/* NOTE: RESPONSIVE: below 900 px the hero becomes one column. */
 @media (max-width: 900px) {
   .hero { min-height: auto; padding: 100px 0 100px; }
   .hero-inner { grid-template-columns: 1fr; gap: 55px; }
@@ -579,7 +536,6 @@ footer {
   .takeaway-stats { margin-left: 0; }
 }
 
-/* NOTE: RESPONSIVE: below 720 px (phones) chart rows and stats become one column. */
 @media (max-width: 720px) {
   body { font-size: 15px; }
   .hero { padding: 78px 0 80px; }
@@ -606,7 +562,6 @@ footer {
   .footer-inner { grid-template-columns: 1fr; gap: 28px; }
 }
 
-/* NOTE: ACCESSIBILITY: turns off smooth scroll and animation if the viewer asks for less motion. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
@@ -618,7 +573,6 @@ footer {
   .reveal { opacity: 1; transform: none; }
 }
 
-/* NOTE: PRINT: hides menus and avoids splitting chart rows across pages. */
 @media print {
   .section-nav, .progress-dots, .scroll-cue, .skip-link { display: none !important; }
   .hero { min-height: auto; }
@@ -631,7 +585,6 @@ footer {
    headlines, chart panels, captions and sources are the same height on the
    left and the right, whatever the content.
    ------------------------------------------------------------------------- */
-/* NOTE: SUBGRID: cards in a row share the same row tracks, so headlines, charts, captions and sources line up left and right. */
 @supports (grid-template-rows: subgrid) {
   .chart-row > .chart-card {
     display: grid;
