@@ -477,17 +477,18 @@ footer {
   width: min(var(--max), calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 80px;
+  grid-template-columns: 1fr 1.5fr 1.1fr;   /* brand | data sources | photo credits */
+  gap: clamp(32px, 4vw, 64px);
 }
-.footer-brand p, .footer-meta p {
+.footer-brand p, .footer-meta p, .footer-credits p {
   margin: 8px 0;
   font-size: .78rem;
   line-height: 1.6;
 }
 .footer-kicker { color: #d4b36a; }
+.footer-credits { padding-top: 28px; }   /* lines "Photo credits" up with "Data sources" */
 .footer-brand strong { color: var(--white); }
-.footer-meta .sources-label {
+.footer-meta .sources-label, .footer-credits .sources-label {
   color: #d4b36a;
   margin-top: 25px;
 }
@@ -560,6 +561,7 @@ footer {
   .stat-number { font-size: 4.8rem; }
 
   .footer-inner { grid-template-columns: 1fr; gap: 28px; }
+  .footer-credits { padding-top: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
