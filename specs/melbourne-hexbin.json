@@ -81,7 +81,7 @@
             "color": {
               "field": "avg_per_sensor",
               "type": "quantitative",
-              "title": "Average pedestrians per sensor, 2025 (logarithmic scale)",
+              "title": ["Average pedestrians per sensor, 2025", "(logarithmic scale)"],
               "scale": {"type": "log", "range": ["#eef3e9", "#8fbba5", "#0f5c5e", "#08393a"]},
               "legend": {"orient": "top", "direction": "horizontal", "format": "~s", "labelExpr": "datum.value >= 1000000 ? format(datum.value / 1000000, '~') + ' million' : format(datum.value / 1000, '~') + ' thousand'", "gradientLength": 260, "values": [1000000, 10000000]}
             },
